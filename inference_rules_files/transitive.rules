@@ -1,0 +1,1 @@
+[transitivePropery1: (?P http://www.w3.org/1999/02/22-rdf-syntax-ns#type http://www.w3.org/2002/07/owl#TransitiveProperty), (?A ?P ?B), (?B ?P ?C) -> (?A ?P ?C)]
