@@ -63,11 +63,11 @@ public class Config {
 		return config.getInt("csparql_server.port");
 	}
 	
-	public String getStreamBaseUri(){
-		if(config.getString("csparql_stream.stream.base_uri").endsWith("/"))
-			return config.getString("csparql_stream.stream.base_uri");
+	public String getHostName(){
+		if(config.getString("csparql_server.host_name").endsWith("/"))
+			return config.getString("csparql_server.host_name");
 		else
-			return config.getString("csparql_stream.stream.base_uri") + "/";
+			return config.getString("csparql_server.host_name") + "/";
 	}
 				
 	public boolean getEnableTSFunction(){

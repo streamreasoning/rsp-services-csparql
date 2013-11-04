@@ -66,6 +66,10 @@
 	<logger name="eu.larkc.csparql.sparql.jena.JenaEngine">
 		<appender-ref ref="CSPARQL_ENGINE" />
 	</logger>
+	
+	<logger name="org.apache.jena.riot" level="OFF" />
+	
+	<logger name="ch.qos.logback.*" level="OFF" />
 
 	<root level="DEBUG">
 		<appender-ref ref="STDOUT" />

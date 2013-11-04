@@ -95,7 +95,7 @@ public class SingleQueryDataServer extends ServerResource {
 					if(checkInputStream(inputStreamNameList)){
 						String queryType = extractQueryType(queryBody);
 						if(queryType.equals("stream")){
-							String newStreamName = Config.getInstance().getStreamBaseUri() + parameterQueryName;
+							String newStreamName = Config.getInstance().getHostName() + "streams/" + parameterQueryName;
 							if(!csparqlStreamTable.contains(newStreamName)){
 								CsparqlQueryResultProxy rp = engine.registerQuery(queryBody);
 								csparqlQueryTable.put(parameterQueryName, new CsparqlQuery(rp.getId(), parameterQueryName, queryType, inputStreamNameList, queryBody, rp, new HashMap<String, CsparqlObserver>(), CsparqlComponentStatus.RUNNING));
@@ -180,7 +180,7 @@ public class SingleQueryDataServer extends ServerResource {
 			if(csparqlQueryTable.containsKey(queryName)){
 				CsparqlQuery csparqlQuery = csparqlQueryTable.get(queryName);
 				if(csparqlQuery.getType().equals("stream")){
-					String newStreamName = Config.getInstance().getStreamBaseUri() + csparqlQuery.getName();
+					String newStreamName = Config.getInstance().getHostName()  + "streams/" + csparqlQuery.getName();
 					if(csparqlStreamTable.contains(newStreamName)){
 						engine.unregisterStream(newStreamName);
 						csparqlStreamTable.remove(newStreamName);
