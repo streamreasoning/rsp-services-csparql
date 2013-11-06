@@ -20,6 +20,7 @@
  ******************************************************************************/
 package polimi.deib.rsp_services_csparql.commons;
 
+import polimi.deib.rsp_services.commons.Rsp_services_Component_Status;
 import polimi.deib.rsp_services.interfaces.RDF_Stream_Interface;
 import eu.larkc.csparql.cep.api.RdfQuadruple;
 import eu.larkc.csparql.cep.api.RdfStream;
@@ -27,12 +28,12 @@ import eu.larkc.csparql.cep.api.RdfStream;
 public class Csparql_RDF_Stream implements RDF_Stream_Interface{
 
 	private RdfStream stream;
-	private CsparqlComponentStatus status;
+	private Rsp_services_Component_Status status;
 	
 	public Csparql_RDF_Stream() {
 		super();
 	}
-	public Csparql_RDF_Stream(RdfStream stream, CsparqlComponentStatus status) {
+	public Csparql_RDF_Stream(RdfStream stream, Rsp_services_Component_Status status) {
 		super();
 		this.stream = stream;
 		this.status = status;
@@ -46,11 +47,11 @@ public class Csparql_RDF_Stream implements RDF_Stream_Interface{
 		this.stream = stream;
 	}
 	
-	public CsparqlComponentStatus getStatus() {
+	public Rsp_services_Component_Status getStatus() {
 		return status;
 	}
 	
-	public void setStatus(CsparqlComponentStatus status) {
+	public void setStatus(Rsp_services_Component_Status status) {
 		this.status = status;
 	}
 	

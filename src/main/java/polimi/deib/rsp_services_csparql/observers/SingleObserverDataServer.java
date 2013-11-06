@@ -30,13 +30,13 @@ import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlQuery;
+import polimi.deib.rsp_services_csparql.commons.Csparql_Query;
 
 import com.google.gson.Gson;
 
 public class SingleObserverDataServer extends ServerResource {
 
-	private static Hashtable<String, CsparqlQuery> csparqlQueryTable;
+	private static Hashtable<String, Csparql_Query> csparqlQueryTable;
 	private Gson gson = new Gson();
 
 	private Logger logger = LoggerFactory.getLogger(SingleObserverDataServer.class.getName());
@@ -45,7 +45,7 @@ public class SingleObserverDataServer extends ServerResource {
 	@Delete
 	public void unregisterObserver(){
 
-		csparqlQueryTable = (Hashtable<String, CsparqlQuery>) getContext().getAttributes().get("csaprqlQueryTable");
+		csparqlQueryTable = (Hashtable<String, Csparql_Query>) getContext().getAttributes().get("csaprqlQueryTable");
 
 		String server_address = (String) getContext().getAttributes().get("complete_server_address");
 
@@ -56,7 +56,7 @@ public class SingleObserverDataServer extends ServerResource {
 
 		try{
 			if(csparqlQueryTable.containsKey(queryName)){
-				CsparqlQuery csparqlQuery = csparqlQueryTable.get(queryName);
+				Csparql_Query csparqlQuery = csparqlQueryTable.get(queryName);
 				if(csparqlQuery.getObservers().containsKey(observerId)){
 					csparqlQuery.removeObserver(observerId);
 					getContext().getAttributes().put("csaprqlQueryTable", csparqlQueryTable);
@@ -86,7 +86,7 @@ public class SingleObserverDataServer extends ServerResource {
 	@Get
 	public void getObserverInfo(){
 
-		csparqlQueryTable = (Hashtable<String, CsparqlQuery>) getContext().getAttributes().get("csaprqlQueryTable");
+		csparqlQueryTable = (Hashtable<String, Csparql_Query>) getContext().getAttributes().get("csaprqlQueryTable");
 
 		String server_address = (String) getContext().getAttributes().get("complete_server_address");
 
@@ -97,7 +97,7 @@ public class SingleObserverDataServer extends ServerResource {
 
 		try{
 			if(csparqlQueryTable.containsKey(queryName)){
-				CsparqlQuery csparqlQuery = csparqlQueryTable.get(queryName);
+				Csparql_Query csparqlQuery = csparqlQueryTable.get(queryName);
 				if(csparqlQuery.getObservers().containsKey(observerId)){
 					getContext().getAttributes().put("csaprqlQueryTable", csparqlQueryTable);
 					this.getResponse().setStatus(Status.SUCCESS_OK,"Observer informations succesfully extracted");

@@ -31,14 +31,14 @@ import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlQuery;
+import polimi.deib.rsp_services_csparql.commons.Csparql_Query;
 import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlQueryDescriptionForGet;
 
 import com.google.gson.Gson;
 
 public class MultipleQueriesDataServer extends ServerResource {
 
-	private static Hashtable<String, CsparqlQuery> csparqlQueryTable;
+	private static Hashtable<String, Csparql_Query> csparqlQueryTable;
 	private Gson gson = new Gson();
 
 	private Logger logger = LoggerFactory.getLogger(MultipleQueriesDataServer.class.getName());
@@ -48,14 +48,14 @@ public class MultipleQueriesDataServer extends ServerResource {
 	public void getQueriesInformations(){
 		
 		try{
-			csparqlQueryTable = (Hashtable<String, CsparqlQuery>) getContext().getAttributes().get("csaprqlQueryTable");
+			csparqlQueryTable = (Hashtable<String, Csparql_Query>) getContext().getAttributes().get("csaprqlQueryTable");
 			ArrayList<CsparqlQueryDescriptionForGet> queryDescriptionList = new ArrayList<CsparqlQueryDescriptionForGet>();
 
 			Set<String> keySet = csparqlQueryTable.keySet();
-			CsparqlQuery registeredCsparqlQuery;
+			Csparql_Query registeredCsparqlQuery;
 			for(String key : keySet){
 				registeredCsparqlQuery = csparqlQueryTable.get(key); 
-				queryDescriptionList.add(new CsparqlQueryDescriptionForGet(registeredCsparqlQuery.getId(), registeredCsparqlQuery.getName(), registeredCsparqlQuery.getType(), registeredCsparqlQuery.getStreams(), registeredCsparqlQuery.getBody(), registeredCsparqlQuery.getStatus()));
+				queryDescriptionList.add(new CsparqlQueryDescriptionForGet(registeredCsparqlQuery.getQueryID(), registeredCsparqlQuery.getName(), registeredCsparqlQuery.getType(), registeredCsparqlQuery.getStreams(), registeredCsparqlQuery.getQueryBody(), registeredCsparqlQuery.getQueryStatus()));
 			}
 
 			this.getResponse().setStatus(Status.SUCCESS_OK,"Information about queries succesfully extracted");

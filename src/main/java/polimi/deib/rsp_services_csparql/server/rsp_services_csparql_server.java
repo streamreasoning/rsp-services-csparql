@@ -31,45 +31,32 @@ import org.restlet.routing.Template;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import polimi.deib.rsp_services_csparql.commons.Csparql_Engine;
+import polimi.deib.rsp_services_csparql.commons.Csparql_Query;
+import polimi.deib.rsp_services_csparql.commons.Csparql_RDF_Stream;
 import polimi.deib.rsp_services_csparql.configuration.Config;
 import polimi.deib.rsp_services_csparql.knowledge_base.Update;
 import polimi.deib.rsp_services_csparql.observers.MultipleObserversDataServer;
 import polimi.deib.rsp_services_csparql.observers.SingleObserverDataServer;
 import polimi.deib.rsp_services_csparql.queries.MultipleQueriesDataServer;
 import polimi.deib.rsp_services_csparql.queries.SingleQueryDataServer;
-import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlQuery;
 import polimi.deib.rsp_services_csparql.streams.MultipleStreamsDataServer;
 import polimi.deib.rsp_services_csparql.streams.SingleStreamDataServer;
-import polimi.deib.rsp_services_csparql.streams.utilities.CsparqlStream;
-import eu.larkc.csparql.core.engine.CsparqlEngine;
-import eu.larkc.csparql.core.engine.CsparqlEngineImpl;
 
 public class rsp_services_csparql_server extends Application{
 
 	private static Component component;
-	private static CsparqlEngine engine = null;
-	private static Hashtable<String, CsparqlStream> csparqlStreamTable = new Hashtable<String, CsparqlStream>();
-	private static Hashtable<String, CsparqlQuery> csparqlQueryTable = new Hashtable<String, CsparqlQuery>();
+	private static Csparql_Engine engine = null;
+	private static Hashtable<String, Csparql_RDF_Stream> csparqlStreamTable = new Hashtable<String, Csparql_RDF_Stream>();
+	private static Hashtable<String, Csparql_Query> csparqlQueryTable = new Hashtable<String, Csparql_Query>();
 	
+	@SuppressWarnings("unused")
 	private static Logger logger = LoggerFactory.getLogger(rsp_services_csparql_server.class.getName());
 
 	public static void main(String[] args) throws Exception{
 
-		engine = new CsparqlEngineImpl();
-
-		if(Config.getInstance().getEnableTSFunction()){
-			logger.debug("Timestamp function enabled");
-			engine.initialize(true);
-		} else {
-			logger.debug("Timestamp function disbaled");
-			engine.initialize(false);
-		}
-
-		if(Config.getInstance().getActivateInference()){
-			logger.debug("Inference enabled");
-			engine.activateInference();
-			engine.setInferenceRulesFilePath(Config.getInstance().getInferenceRulesFile());
-		}
+		engine = new Csparql_Engine();
+		engine.initialize();
 
 		component = new Component();
 		component.getServers().add(Protocol.HTTP, Config.getInstance().getServerPort());

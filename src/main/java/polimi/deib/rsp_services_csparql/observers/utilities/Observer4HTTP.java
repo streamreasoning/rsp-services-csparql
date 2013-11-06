@@ -74,6 +74,10 @@ public class Observer4HTTP implements GenericObserver<RDFTable>{
 	}
 
 	public void update(final GenericObservable<RDFTable> observed, final RDFTable q) {
+		
+		System.out.println();
+		System.out.println("-------------------------->>>>> AAAAAAAAAAAAAAAAAAAAAAA");
+		System.out.println();
 
 		try {
 

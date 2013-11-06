@@ -45,12 +45,12 @@
 	</properties>
 
 	<dependencies>
-	    <dependency>
-	        <groupId>polimi.deib</groupId>
+		<dependency>
+			<groupId>polimi.deib</groupId>
 			<artifactId>rsp-services</artifactId>
 			<version>0.3.2.2</version>
-	    </dependency>
-	    
+		</dependency>
+
 		<dependency>
 			<groupId>xerces</groupId>
 			<artifactId>xercesImpl</artifactId>

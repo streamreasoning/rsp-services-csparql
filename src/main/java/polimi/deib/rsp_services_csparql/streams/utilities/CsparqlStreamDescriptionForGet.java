@@ -20,17 +20,17 @@
  ******************************************************************************/
 package polimi.deib.rsp_services_csparql.streams.utilities;
 
-import polimi.deib.rsp_services_csparql.commons.CsparqlComponentStatus;
+import polimi.deib.rsp_services.commons.Rsp_services_Component_Status;
 
 public class CsparqlStreamDescriptionForGet {
 
 	private String streamIRI;
-	private CsparqlComponentStatus status;
+	private Rsp_services_Component_Status status;
 	
 	public CsparqlStreamDescriptionForGet() {
 		super();
 	}
-	public CsparqlStreamDescriptionForGet(String streamIRI, CsparqlComponentStatus status) {
+	public CsparqlStreamDescriptionForGet(String streamIRI, Rsp_services_Component_Status status) {
 		super();
 		this.streamIRI = streamIRI;
 		this.status = status;
@@ -42,10 +42,10 @@ public class CsparqlStreamDescriptionForGet {
 	public void setStream(String streamIRI) {
 		this.streamIRI = streamIRI;
 	}
-	public CsparqlComponentStatus getStatus() {
+	public Rsp_services_Component_Status getStatus() {
 		return status;
 	}
-	public void setStatus(CsparqlComponentStatus status) {
+	public void setStatus(Rsp_services_Component_Status status) {
 		this.status = status;
 	}
 }

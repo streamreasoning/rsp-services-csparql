@@ -42,19 +42,19 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
-import polimi.deib.rsp_services_csparql.commons.CsparqlComponentStatus;
+import polimi.deib.rsp_services.commons.Rsp_services_Component_Status;
+import polimi.deib.rsp_services_csparql.commons.Csparql_Engine;
+import polimi.deib.rsp_services_csparql.commons.Csparql_RDF_Stream;
 import polimi.deib.rsp_services_csparql.commons.Utilities;
-import polimi.deib.rsp_services_csparql.streams.utilities.CsparqlStream;
 import polimi.deib.rsp_services_csparql.streams.utilities.CsparqlStreamDescriptionForGet;
 
 import eu.larkc.csparql.cep.api.RdfQuadruple;
 import eu.larkc.csparql.cep.api.RdfStream;
-import eu.larkc.csparql.core.engine.CsparqlEngine;
 
 public class SingleStreamDataServer extends ServerResource {
 
-	private static Hashtable<String, CsparqlStream> csparqlStreamTable;
-	private CsparqlEngine engine;
+	private static Hashtable<String, Csparql_RDF_Stream> csparqlStreamTable;
+	private Csparql_Engine engine;
 	private Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 	private Logger logger = LoggerFactory.getLogger(SingleStreamDataServer.class.getName());
 
@@ -63,14 +63,15 @@ public class SingleStreamDataServer extends ServerResource {
 	public void registerStream(){
 
 		try{
-			csparqlStreamTable = (Hashtable<String, CsparqlStream>) getContext().getAttributes().get("csaprqlinputStreamTable");
-			engine = (CsparqlEngine) getContext().getAttributes().get("csparqlengine");
+			csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
+			engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
 
 			String inputStreamName = URLDecoder.decode((String) this.getRequest().getAttributes().get("streamname"), "UTF-8");
 
 			if(!csparqlStreamTable.containsKey(inputStreamName)){
 				RdfStream stream = new RdfStream(inputStreamName);
-				csparqlStreamTable.put(inputStreamName, new CsparqlStream(stream, CsparqlComponentStatus.RUNNING));
+				Csparql_RDF_Stream csparqlStream = new Csparql_RDF_Stream(stream, Rsp_services_Component_Status.RUNNING);
+				csparqlStreamTable.put(inputStreamName, csparqlStream);
 				engine.registerStream(stream);
 				getContext().getAttributes().put("csaprqlinputStreamTable", csparqlStreamTable);
 				getContext().getAttributes().put("csparqlengine", engine);
@@ -96,8 +97,8 @@ public class SingleStreamDataServer extends ServerResource {
 	@Delete
 	public void unregisterStream(){
 		try{
-			csparqlStreamTable = (Hashtable<String, CsparqlStream>) getContext().getAttributes().get("csaprqlinputStreamTable");
-			engine = (CsparqlEngine) getContext().getAttributes().get("csparqlengine");
+			csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
+			engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
 
 			String inputStreamName = URLDecoder.decode((String) this.getRequest().getAttributes().get("streamname"), "UTF-8");
 
@@ -130,13 +131,13 @@ public class SingleStreamDataServer extends ServerResource {
 	public void feedStream(Representation rep){
 
 		try{
-			csparqlStreamTable = (Hashtable<String, CsparqlStream>) getContext().getAttributes().get("csaprqlinputStreamTable");
-			engine = (CsparqlEngine) getContext().getAttributes().get("csparqlengine");
+			csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
+			engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
 
 			String inputStreamName = URLDecoder.decode((String) this.getRequest().getAttributes().get("streamname"), "UTF-8");
 
 			if(csparqlStreamTable.containsKey(inputStreamName)){
-				CsparqlStream streamRepresentation = csparqlStreamTable.get(inputStreamName);
+				Csparql_RDF_Stream streamRepresentation = csparqlStreamTable.get(inputStreamName);
 
 				String jsonSerialization = rep.getText();
 
@@ -149,7 +150,7 @@ public class SingleStreamDataServer extends ServerResource {
 					StmtIterator it = model.listStatements();
 					while(it.hasNext()){
 						Statement st = it.next();
-						streamRepresentation.feedStream(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
+						streamRepresentation.feed_RDF_stream(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
 					}
 
 					this.getResponse().setStatus(Status.SUCCESS_OK,"Stream " + inputStreamName + " succesfully feeded");
@@ -162,7 +163,7 @@ public class SingleStreamDataServer extends ServerResource {
 						StmtIterator it = model.listStatements();
 						while(it.hasNext()){
 							Statement st = it.next();
-							streamRepresentation.getStream().put(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
+							streamRepresentation.feed_RDF_stream(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
 						}
 
 						this.getResponse().setStatus(Status.SUCCESS_OK,"Stream " + inputStreamName + " succesfully feeded");
@@ -175,7 +176,7 @@ public class SingleStreamDataServer extends ServerResource {
 							StmtIterator it = model.listStatements();
 							while(it.hasNext()){
 								Statement st = it.next();
-								streamRepresentation.getStream().put(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
+								streamRepresentation.feed_RDF_stream(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
 							}
 
 							this.getResponse().setStatus(Status.SUCCESS_OK,"Stream " + inputStreamName + " succesfully feeded");
@@ -187,7 +188,7 @@ public class SingleStreamDataServer extends ServerResource {
 							StmtIterator it = model.listStatements();
 							while(it.hasNext()){
 								Statement st = it.next();
-								streamRepresentation.getStream().put(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
+								streamRepresentation.feed_RDF_stream(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
 							}
 
 							this.getResponse().setStatus(Status.SUCCESS_OK,"Stream " + inputStreamName + " succesfully feeded");
@@ -283,12 +284,12 @@ public class SingleStreamDataServer extends ServerResource {
 
 		try{
 
-			csparqlStreamTable = (Hashtable<String, CsparqlStream>) getContext().getAttributes().get("csaprqlinputStreamTable");
+			csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
 
 			String inputStreamName = URLDecoder.decode((String) this.getRequest().getAttributes().get("streamname"), "UTF-8");
 
 			if(csparqlStreamTable.containsKey(inputStreamName)){
-				CsparqlStream streamRepresentation = csparqlStreamTable.get(inputStreamName);
+				Csparql_RDF_Stream streamRepresentation = csparqlStreamTable.get(inputStreamName);
 				this.getResponse().setStatus(Status.SUCCESS_OK,"Information about " + inputStreamName + " succesfully extracted");
 				this.getResponse().setEntity(gson.toJson(new CsparqlStreamDescriptionForGet(streamRepresentation.getStream().getIRI(), streamRepresentation.getStatus())), MediaType.APPLICATION_JSON);
 			} else {

@@ -1,12 +1,22 @@
 package polimi.deib.rsp_services_csparql.commons;
 
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import eu.larkc.csparql.cep.api.RdfStream;
 import eu.larkc.csparql.core.engine.CsparqlEngineImpl;
 import polimi.deib.rsp_services.interfaces.RDF_Stream_Processor_Interface;
+import polimi.deib.rsp_services_csparql.configuration.Config;
 
 public class Csparql_Engine implements RDF_Stream_Processor_Interface{
 
+	private Logger logger = LoggerFactory.getLogger(Csparql_Engine.class.getName());
 	private CsparqlEngineImpl engine;
+	
+	public void execUpdateQueryOverDatasource(String queryBody){
+		engine.execUpdateQueryOverDatasource(queryBody);
+	}
 
 	@Override
 	public Object getRDFStreamProcessor() {
@@ -17,6 +27,12 @@ public class Csparql_Engine implements RDF_Stream_Processor_Interface{
 	public Object registerStream(String streamName) {
 		RdfStream stream = new RdfStream(streamName);
 		return engine.registerStream(stream);
+	}
+	
+	@Override
+	public Object registerStream(Object stream) {
+		RdfStream RDFstream = (RdfStream) stream;
+		return engine.registerStream(RDFstream);
 	}
 
 	@Override
@@ -84,8 +100,21 @@ public class Csparql_Engine implements RDF_Stream_Processor_Interface{
 
 	@Override
 	public void initialize() {
-		// TODO Auto-generated method stub
+		engine = new CsparqlEngineImpl();
+
+		if(Config.getInstance().getEnableTSFunction()){
+			logger.debug("Timestamp function enabled");
+			engine.initialize(true);
+		} else {
+			logger.debug("Timestamp function disbaled");
+			engine.initialize(false);
+		}
+
+		if(Config.getInstance().getActivateInference()){
+			logger.debug("Inference enabled");
+			engine.activateInference();
+			engine.setInferenceRulesFilePath(Config.getInstance().getInferenceRulesFile());
+		}
 
 	}
-
 }

@@ -22,7 +22,7 @@ package polimi.deib.rsp_services_csparql.queries.utilities;
 
 import java.util.Collection;
 
-import polimi.deib.rsp_services_csparql.commons.CsparqlComponentStatus;
+import polimi.deib.rsp_services.commons.Rsp_services_Component_Status;
 
 public class CsparqlQueryDescriptionForGet {
 	
@@ -31,14 +31,14 @@ public class CsparqlQueryDescriptionForGet {
 	private String type;
 	private Collection<String> streams;
 	private String body;
-	private CsparqlComponentStatus status;
+	private Rsp_services_Component_Status status;
 	
 	public CsparqlQueryDescriptionForGet() {
 		super();
 	}
 
 	public CsparqlQueryDescriptionForGet(String id, String name, String type,
-			Collection<String> streams, String body,CsparqlComponentStatus status) {
+			Collection<String> streams, String body,Rsp_services_Component_Status status) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -88,11 +88,11 @@ public class CsparqlQueryDescriptionForGet {
 		this.body = body;
 	}
 
-	public CsparqlComponentStatus getStatus() {
+	public Rsp_services_Component_Status getStatus() {
 		return status;
 	}
 
-	public void setStatus(CsparqlComponentStatus status) {
+	public void setStatus(Rsp_services_Component_Status status) {
 		this.status = status;
 	}
 }

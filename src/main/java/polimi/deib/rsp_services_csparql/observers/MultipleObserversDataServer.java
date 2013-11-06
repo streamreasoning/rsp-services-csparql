@@ -32,15 +32,15 @@ import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import polimi.deib.rsp_services_csparql.commons.Csparql_Query;
 import polimi.deib.rsp_services_csparql.queries.SingleQueryDataServer;
 import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlObserver;
-import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlQuery;
 
 import com.google.gson.Gson;
 
 public class MultipleObserversDataServer  extends ServerResource {
 
-	private static Hashtable<String, CsparqlQuery> csparqlQueryTable;
+	private static Hashtable<String, Csparql_Query> csparqlQueryTable;
 	private Gson gson = new Gson();
 
 	private Logger logger = LoggerFactory.getLogger(SingleQueryDataServer.class.getName());
@@ -49,14 +49,14 @@ public class MultipleObserversDataServer  extends ServerResource {
 	@Get
 	public void getObserversInfo(){
 
-		csparqlQueryTable = (Hashtable<String, CsparqlQuery>) getContext().getAttributes().get("csaprqlQueryTable");
+		csparqlQueryTable = (Hashtable<String, Csparql_Query>) getContext().getAttributes().get("csaprqlQueryTable");
 		ArrayList<CsparqlObserver> observers = new ArrayList<CsparqlObserver>();
 
 		String queryName = (String) this.getRequest().getAttributes().get("queryname");
 
 		try{
 			if(queryName.contains(queryName)){
-				CsparqlQuery csparqlQuery = csparqlQueryTable.get(queryName);
+				Csparql_Query csparqlQuery = csparqlQueryTable.get(queryName);
 				Set<Entry<String, CsparqlObserver>> obsSet = csparqlQuery.getObservers().entrySet();
 				for(Entry<String, CsparqlObserver> eObserver : obsSet){
 					observers.add(eObserver.getValue());

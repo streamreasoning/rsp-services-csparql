@@ -30,9 +30,9 @@ import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
+import polimi.deib.rsp_services_csparql.commons.Csparql_Engine;
 
-import eu.larkc.csparql.core.engine.CsparqlEngine;
+import com.google.gson.Gson;
 
 public class Update extends ServerResource {
 
@@ -45,7 +45,7 @@ public class Update extends ServerResource {
 		
 		try {
 
-			CsparqlEngine engine = (CsparqlEngine) getContext().getAttributes().get("csparqlengine");
+			Csparql_Engine engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
 
 			String queryBody;
 			queryBody = rep.getText();

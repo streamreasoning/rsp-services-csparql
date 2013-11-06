@@ -31,14 +31,14 @@ import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import polimi.deib.rsp_services_csparql.streams.utilities.CsparqlStream;
+import polimi.deib.rsp_services_csparql.commons.Csparql_RDF_Stream;
 import polimi.deib.rsp_services_csparql.streams.utilities.CsparqlStreamDescriptionForGet;
 
 import com.google.gson.Gson;
 
 public class MultipleStreamsDataServer extends ServerResource {
 
-	private static Hashtable<String, CsparqlStream> csparqlStreamTable;
+	private static Hashtable<String, Csparql_RDF_Stream> csparqlStreamTable;
 	private Gson gson = new Gson();
 	private Logger logger = LoggerFactory.getLogger(MultipleStreamsDataServer.class.getName());
 
@@ -47,11 +47,11 @@ public class MultipleStreamsDataServer extends ServerResource {
 	public void getStreamsInformations(){
 
 		try{
-			csparqlStreamTable = (Hashtable<String, CsparqlStream>) getContext().getAttributes().get("csaprqlinputStreamTable");
+			csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
 			ArrayList<CsparqlStreamDescriptionForGet> streamDescriptionList = new ArrayList<CsparqlStreamDescriptionForGet>();
 
 			Set<String> keySet = csparqlStreamTable.keySet();
-			CsparqlStream registeredCsparqlStream;
+			Csparql_RDF_Stream registeredCsparqlStream;
 			for(String key : keySet){
 				registeredCsparqlStream = csparqlStreamTable.get(key); 
 				streamDescriptionList.add(new CsparqlStreamDescriptionForGet(registeredCsparqlStream.getStream().getIRI(), registeredCsparqlStream.getStatus()));
