@@ -45,6 +45,12 @@
 	</properties>
 
 	<dependencies>
+	    <dependency>
+	        <groupId>polimi.deib</groupId>
+			<artifactId>rsp-services</artifactId>
+			<version>0.3.2.2</version>
+	    </dependency>
+	    
 		<dependency>
 			<groupId>xerces</groupId>
 			<artifactId>xercesImpl</artifactId>
@@ -178,7 +184,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>polimi.deib.rsp_service4csparql_server.rsp_service4csparql_server</mainClass>
+							<mainClass>polimi.deib.rsp_services_csparql.server.rsp_services_server</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

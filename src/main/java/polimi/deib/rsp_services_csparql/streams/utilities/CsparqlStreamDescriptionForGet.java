@@ -18,18 +18,34 @@
  * This work was partially supported by the European project LarKC (FP7-215535) 
  * and by the European project MODAClouds (FP7-318484)
  ******************************************************************************/
-package polimi.deib.rsp_service4csparql_server.observer.utilities;
+package polimi.deib.rsp_services_csparql.streams.utilities;
 
-import eu.larkc.csparql.common.RDFTable;
-import eu.larkc.csparql.common.streams.format.GenericObservable;
-import eu.larkc.csparql.common.streams.format.GenericObserver;
+import polimi.deib.rsp_services_csparql.commons.CsparqlComponentStatus;
 
-public class LocalResultObserver implements GenericObserver<RDFTable>{
+public class CsparqlStreamDescriptionForGet {
 
-	public void update(final GenericObservable<RDFTable> observed, final RDFTable q) {
-
-		System.out.println("UPDATEEEEEE");
-		System.out.println(q.getJsonSerialization());
-
+	private String streamIRI;
+	private CsparqlComponentStatus status;
+	
+	public CsparqlStreamDescriptionForGet() {
+		super();
+	}
+	public CsparqlStreamDescriptionForGet(String streamIRI, CsparqlComponentStatus status) {
+		super();
+		this.streamIRI = streamIRI;
+		this.status = status;
+	}
+	
+	public String getStream() {
+		return streamIRI;
+	}
+	public void setStream(String streamIRI) {
+		this.streamIRI = streamIRI;
+	}
+	public CsparqlComponentStatus getStatus() {
+		return status;
+	}
+	public void setStatus(CsparqlComponentStatus status) {
+		this.status = status;
 	}
 }

@@ -18,7 +18,7 @@
  * This work was partially supported by the European project LarKC (FP7-215535) 
  * and by the European project MODAClouds (FP7-318484)
  ******************************************************************************/
-package polimi.deib.rsp_service4csparql_server.knowledge_base;
+package polimi.deib.rsp_services_csparql.knowledge_base;
 
 import java.io.IOException;
 

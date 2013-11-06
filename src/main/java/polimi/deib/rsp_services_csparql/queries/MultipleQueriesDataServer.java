@@ -18,7 +18,7 @@
  * This work was partially supported by the European project LarKC (FP7-215535) 
  * and by the European project MODAClouds (FP7-318484)
  ******************************************************************************/
-package polimi.deib.rsp_service4csparql_server.query;
+package polimi.deib.rsp_services_csparql.queries;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -31,8 +31,8 @@ import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import polimi.deib.rsp_service4csparql_server.query.utilities.CsparqlQuery;
-import polimi.deib.rsp_service4csparql_server.query.utilities.CsparqlQueryDescriptionForGet;
+import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlQuery;
+import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlQueryDescriptionForGet;
 
 import com.google.gson.Gson;
 

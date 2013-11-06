@@ -18,7 +18,7 @@
  * This work was partially supported by the European project LarKC (FP7-215535) 
  * and by the European project MODAClouds (FP7-318484)
  ******************************************************************************/
-package polimi.deib.rsp_service4csparql_server.query;
+package polimi.deib.rsp_services_csparql.queries;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -38,13 +38,13 @@ import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import polimi.deib.rsp_service4csparql_server.common.CsparqlComponentStatus;
-import polimi.deib.rsp_service4csparql_server.configuration.Config;
-import polimi.deib.rsp_service4csparql_server.observer.utilities.Observer4HTTP;
-import polimi.deib.rsp_service4csparql_server.query.utilities.CsparqlObserver;
-import polimi.deib.rsp_service4csparql_server.query.utilities.CsparqlQuery;
-import polimi.deib.rsp_service4csparql_server.query.utilities.CsparqlQueryDescriptionForGet;
-import polimi.deib.rsp_service4csparql_server.stream.utilities.CsparqlStream;
+import polimi.deib.rsp_services_csparql.commons.CsparqlComponentStatus;
+import polimi.deib.rsp_services_csparql.configuration.Config;
+import polimi.deib.rsp_services_csparql.observers.utilities.Observer4HTTP;
+import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlObserver;
+import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlQuery;
+import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlQueryDescriptionForGet;
+import polimi.deib.rsp_services_csparql.streams.utilities.CsparqlStream;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

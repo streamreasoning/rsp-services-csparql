@@ -18,7 +18,7 @@
  * This work was partially supported by the European project LarKC (FP7-215535) 
  * and by the European project MODAClouds (FP7-318484)
  ******************************************************************************/
-package polimi.deib.rsp_service4csparql_server.stream;
+package polimi.deib.rsp_services_csparql.streams;
 
 import java.io.ByteArrayInputStream;
 import java.net.URLDecoder;
@@ -42,10 +42,10 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
-import polimi.deib.rsp_service4csparql_server.common.CsparqlComponentStatus;
-import polimi.deib.rsp_service4csparql_server.common.Utilities;
-import polimi.deib.rsp_service4csparql_server.stream.utilities.CsparqlStream;
-import polimi.deib.rsp_service4csparql_server.stream.utilities.CsparqlStreamDescriptionForGet;
+import polimi.deib.rsp_services_csparql.commons.CsparqlComponentStatus;
+import polimi.deib.rsp_services_csparql.commons.Utilities;
+import polimi.deib.rsp_services_csparql.streams.utilities.CsparqlStream;
+import polimi.deib.rsp_services_csparql.streams.utilities.CsparqlStreamDescriptionForGet;
 
 import eu.larkc.csparql.cep.api.RdfQuadruple;
 import eu.larkc.csparql.cep.api.RdfStream;

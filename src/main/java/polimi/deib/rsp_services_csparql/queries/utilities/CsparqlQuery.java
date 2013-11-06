@@ -18,34 +18,59 @@
  * This work was partially supported by the European project LarKC (FP7-215535) 
  * and by the European project MODAClouds (FP7-318484)
  ******************************************************************************/
-package polimi.deib.rsp_service4csparql_server.query.utilities;
+package polimi.deib.rsp_services_csparql.queries.utilities;
 
 import java.util.Collection;
+import java.util.HashMap;
 
-import polimi.deib.rsp_service4csparql_server.common.CsparqlComponentStatus;
+import eu.larkc.csparql.core.engine.CsparqlQueryResultProxy;
 
-public class CsparqlQueryDescriptionForGet {
-	
+import polimi.deib.rsp_services_csparql.commons.CsparqlComponentStatus;
+
+public class CsparqlQuery {
+
 	private String id;
 	private String name;
 	private String type;
 	private Collection<String> streams;
 	private String body;
+	private CsparqlQueryResultProxy resultProxy;
+	private HashMap<String, CsparqlObserver> observers;
 	private CsparqlComponentStatus status;
-	
-	public CsparqlQueryDescriptionForGet() {
+
+	public CsparqlQuery() {
 		super();
 	}
 
-	public CsparqlQueryDescriptionForGet(String id, String name, String type,
-			Collection<String> streams, String body,CsparqlComponentStatus status) {
+	public CsparqlQuery(String id, String name, String type,
+			Collection<String> streams, String body,
+			CsparqlQueryResultProxy resultProxy,
+			HashMap<String, CsparqlObserver> observers, CsparqlComponentStatus status) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.type = type;
 		this.streams = streams;
 		this.body = body;
+		this.resultProxy = resultProxy;
+		this.observers = observers;
 		this.status = status;
+	}
+
+	public CsparqlQueryResultProxy getResultProxy() {
+		return resultProxy;
+	}
+
+	public void setResultProxy(CsparqlQueryResultProxy resultProxy) {
+		this.resultProxy = resultProxy;
+	}
+
+	public HashMap<String, CsparqlObserver> getObservers() {
+		return observers;
+	}
+
+	public void setObservers(HashMap<String, CsparqlObserver> observers) {
+		this.observers = observers;
 	}
 
 	public String getId() {
@@ -94,5 +119,16 @@ public class CsparqlQueryDescriptionForGet {
 
 	public void setStatus(CsparqlComponentStatus status) {
 		this.status = status;
+	}
+
+	public void addObserver(CsparqlObserver cso){
+		resultProxy.addObserver(cso.getObserver());
+		observers.put(cso.getId(), cso);
+	}
+
+	public void removeObserver(String obsID){
+		CsparqlObserver cso = observers.get(obsID);
+		resultProxy.removeObserver(cso.getObserver());
+		observers.remove(obsID);
 	}
 }

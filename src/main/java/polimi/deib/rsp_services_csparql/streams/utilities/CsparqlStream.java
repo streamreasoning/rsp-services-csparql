@@ -18,34 +18,43 @@
  * This work was partially supported by the European project LarKC (FP7-215535) 
  * and by the European project MODAClouds (FP7-318484)
  ******************************************************************************/
-package polimi.deib.rsp_service4csparql_server.stream.utilities;
+package polimi.deib.rsp_services_csparql.streams.utilities;
 
-import polimi.deib.rsp_service4csparql_server.common.CsparqlComponentStatus;
+import polimi.deib.rsp_services_csparql.commons.CsparqlComponentStatus;
+import eu.larkc.csparql.cep.api.RdfQuadruple;
+import eu.larkc.csparql.cep.api.RdfStream;
 
-public class CsparqlStreamDescriptionForGet {
+public class CsparqlStream{
 
-	private String streamIRI;
+	private RdfStream stream;
 	private CsparqlComponentStatus status;
 	
-	public CsparqlStreamDescriptionForGet() {
+	public CsparqlStream() {
 		super();
 	}
-	public CsparqlStreamDescriptionForGet(String streamIRI, CsparqlComponentStatus status) {
+	public CsparqlStream(RdfStream stream, CsparqlComponentStatus status) {
 		super();
-		this.streamIRI = streamIRI;
+		this.stream = stream;
 		this.status = status;
 	}
 	
-	public String getStream() {
-		return streamIRI;
+	public RdfStream getStream() {
+		return stream;
 	}
-	public void setStream(String streamIRI) {
-		this.streamIRI = streamIRI;
+	
+	public void setStream(RdfStream stream) {
+		this.stream = stream;
 	}
+	
 	public CsparqlComponentStatus getStatus() {
 		return status;
 	}
+	
 	public void setStatus(CsparqlComponentStatus status) {
 		this.status = status;
+	}
+	
+	public void feedStream(RdfQuadruple quadruple){
+		stream.put(quadruple);
 	}
 }

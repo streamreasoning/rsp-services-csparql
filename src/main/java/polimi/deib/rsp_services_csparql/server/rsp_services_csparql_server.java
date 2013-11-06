@@ -18,7 +18,7 @@
  * This work was partially supported by the European project LarKC (FP7-215535) 
  * and by the European project MODAClouds (FP7-318484)
  ******************************************************************************/
-package polimi.deib.rsp_service4csparql_server;
+package polimi.deib.rsp_services_csparql.server;
 
 import java.util.Hashtable;
 
@@ -31,27 +31,27 @@ import org.restlet.routing.Template;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import polimi.deib.rsp_service4csparql_server.configuration.Config;
-import polimi.deib.rsp_service4csparql_server.knowledge_base.Update;
-import polimi.deib.rsp_service4csparql_server.observer.MultipleObserversDataServer;
-import polimi.deib.rsp_service4csparql_server.observer.SingleObserverDataServer;
-import polimi.deib.rsp_service4csparql_server.query.MultipleQueriesDataServer;
-import polimi.deib.rsp_service4csparql_server.query.SingleQueryDataServer;
-import polimi.deib.rsp_service4csparql_server.query.utilities.CsparqlQuery;
-import polimi.deib.rsp_service4csparql_server.stream.MultipleStreamsDataServer;
-import polimi.deib.rsp_service4csparql_server.stream.SingleStreamDataServer;
-import polimi.deib.rsp_service4csparql_server.stream.utilities.CsparqlStream;
+import polimi.deib.rsp_services_csparql.configuration.Config;
+import polimi.deib.rsp_services_csparql.knowledge_base.Update;
+import polimi.deib.rsp_services_csparql.observers.MultipleObserversDataServer;
+import polimi.deib.rsp_services_csparql.observers.SingleObserverDataServer;
+import polimi.deib.rsp_services_csparql.queries.MultipleQueriesDataServer;
+import polimi.deib.rsp_services_csparql.queries.SingleQueryDataServer;
+import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlQuery;
+import polimi.deib.rsp_services_csparql.streams.MultipleStreamsDataServer;
+import polimi.deib.rsp_services_csparql.streams.SingleStreamDataServer;
+import polimi.deib.rsp_services_csparql.streams.utilities.CsparqlStream;
 import eu.larkc.csparql.core.engine.CsparqlEngine;
 import eu.larkc.csparql.core.engine.CsparqlEngineImpl;
 
-public class rsp_service4csparql_server extends Application{
+public class rsp_services_csparql_server extends Application{
 
 	private static Component component;
 	private static CsparqlEngine engine = null;
 	private static Hashtable<String, CsparqlStream> csparqlStreamTable = new Hashtable<String, CsparqlStream>();
 	private static Hashtable<String, CsparqlQuery> csparqlQueryTable = new Hashtable<String, CsparqlQuery>();
 	
-	private static Logger logger = LoggerFactory.getLogger(rsp_service4csparql_server.class.getName());
+	private static Logger logger = LoggerFactory.getLogger(rsp_services_csparql_server.class.getName());
 
 	public static void main(String[] args) throws Exception{
 
@@ -75,7 +75,7 @@ public class rsp_service4csparql_server extends Application{
 		component.getServers().add(Protocol.HTTP, Config.getInstance().getServerPort());
 		component.getClients().add(Protocol.FILE);  
 
-		rsp_service4csparql_server csparqlServer = new rsp_service4csparql_server();
+		rsp_services_csparql_server csparqlServer = new rsp_services_csparql_server();
 		component.getDefaultHost().attach("", csparqlServer);
 		
 		component.start();

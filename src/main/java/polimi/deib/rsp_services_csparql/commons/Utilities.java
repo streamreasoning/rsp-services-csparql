@@ -18,42 +18,19 @@
  * This work was partially supported by the European project LarKC (FP7-215535) 
  * and by the European project MODAClouds (FP7-318484)
  ******************************************************************************/
-package polimi.deib.rsp_service4csparql_server.query.utilities;
+package polimi.deib.rsp_services_csparql.commons;
 
-import eu.larkc.csparql.common.RDFTable;
-import eu.larkc.csparql.common.streams.format.GenericObserver;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 
-public class CsparqlObserver {
+public class Utilities {
 	
-	private String id;
-	private GenericObserver<RDFTable> observer;
-	
-	public CsparqlObserver(String id, GenericObserver<RDFTable> observer) {
-		super();
-		this.id = id;
-		this.observer = observer;
+	public static String getStackTrace(Exception e) {
+		Writer result = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(result);
+		e.printStackTrace(printWriter);
+		return result.toString();
 	}
-	
-	public CsparqlObserver() {
-		super();
-	}
-	
-	public String getId() {
-		return id;
-	}
-	
-	public void setId(String id) {
-		this.id = id;
-	}
-	
-	public GenericObserver<RDFTable> getObserver() {
-		return observer;
-	}
-	
-	public void setObserver(GenericObserver<RDFTable> observer) {
-		this.observer = observer;
-	}
-	
-	
 
 }
