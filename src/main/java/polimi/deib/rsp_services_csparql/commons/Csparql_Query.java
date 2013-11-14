@@ -59,7 +59,7 @@ public class Csparql_Query implements Continuous_Query_Interface{
 		boolean result = false;
 		try{
 			Csparql_Observer_Descriptor cso = observers.get(observerID);
-			resultProxy.removeObserver(cso.getObserver());
+			resultProxy.deleteObserver(cso.getObserver());
 			observers.remove(observerID);
 			result = true;
 		} catch(Exception e){

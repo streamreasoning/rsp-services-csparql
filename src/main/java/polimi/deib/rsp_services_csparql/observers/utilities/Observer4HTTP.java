@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Observable;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -36,12 +37,11 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.streamreasoning.rsp_services.interfaces.Continuous_Query_Observer_Interface;
 
 import eu.larkc.csparql.common.RDFTable;
-import eu.larkc.csparql.common.streams.format.GenericObservable;
-import eu.larkc.csparql.common.streams.format.GenericObserver;
 
-public class Observer4HTTP implements GenericObserver<RDFTable>{
+public class Observer4HTTP implements Continuous_Query_Observer_Interface{
 
 	private String clientAddress;
 
@@ -73,11 +73,51 @@ public class Observer4HTTP implements GenericObserver<RDFTable>{
 
 	}
 
-	public void update(final GenericObservable<RDFTable> observed, final RDFTable q) {
-		
-		System.out.println();
-		System.out.println("-------------------------->>>>> AAAAAAAAAAAAAAAAAAAAAAA");
-		System.out.println();
+//	public void update(final GenericObservable<RDFTable> observed, final RDFTable q) {
+//
+//		try {
+//
+//			if(sendEmptyResults){
+//				if(!q.getJsonSerialization().isEmpty()){
+//					method.setEntity(new StringEntity(q.getJsonSerialization()));
+//
+//					httpResponse = client.execute(method);
+//					httpEntity = httpResponse.getEntity();
+//
+//					httpParams = client.getParams();
+//					HttpConnectionParams.setConnectionTimeout(httpParams, 30000);
+//
+//					EntityUtils.consume(httpEntity);
+//				}
+//			} else {
+//				method.setEntity(new StringEntity(q.getJsonSerialization()));
+//
+//				httpResponse = client.execute(method);
+//				httpEntity = httpResponse.getEntity();
+//
+//				httpParams = client.getParams();
+//				HttpConnectionParams.setConnectionTimeout(httpParams, 30000);
+//
+//				EntityUtils.consume(httpEntity);
+//			}
+//
+//		} catch(org.apache.http.conn.HttpHostConnectException e){
+//			logger.error("Connection to {} refused", clientAddress);
+//		} catch (UnsupportedEncodingException e) {
+//			logger.error("error while encoding", e);
+//		} catch (ClientProtocolException e) {
+//			logger.error("error while calling rest service", e);
+//		} catch (IOException e) {
+//			logger.error("error during IO operation", e);
+//		} finally {
+//			method.releaseConnection();
+//		}
+//	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+
+		RDFTable q = (RDFTable) arg;	
 
 		try {
 
@@ -95,7 +135,7 @@ public class Observer4HTTP implements GenericObserver<RDFTable>{
 				}
 			} else {
 				method.setEntity(new StringEntity(q.getJsonSerialization()));
-				
+
 				httpResponse = client.execute(method);
 				httpEntity = httpResponse.getEntity();
 
@@ -115,6 +155,6 @@ public class Observer4HTTP implements GenericObserver<RDFTable>{
 			logger.error("error during IO operation", e);
 		} finally {
 			method.releaseConnection();
-		}
+		}		
 	}
 }

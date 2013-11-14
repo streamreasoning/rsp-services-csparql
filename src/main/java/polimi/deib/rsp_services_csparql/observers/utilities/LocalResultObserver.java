@@ -20,16 +20,21 @@
  ******************************************************************************/
 package polimi.deib.rsp_services_csparql.observers.utilities;
 
+import java.util.Observable;
+
+import org.streamreasoning.rsp_services.interfaces.Continuous_Query_Observer_Interface;
+
 import eu.larkc.csparql.common.RDFTable;
-import eu.larkc.csparql.common.streams.format.GenericObservable;
-import eu.larkc.csparql.common.streams.format.GenericObserver;
 
-public class LocalResultObserver implements GenericObserver<RDFTable>{
+public class LocalResultObserver implements Continuous_Query_Observer_Interface{
 
-	public void update(final GenericObservable<RDFTable> observed, final RDFTable q) {
-
-		System.out.println("UPDATEEEEEE");
+	@Override
+	public void update(Observable o, Object arg) {
+		
+		RDFTable q = (RDFTable) arg;
+		
 		System.out.println(q.getJsonSerialization());
-
+		
 	}
+
 }
