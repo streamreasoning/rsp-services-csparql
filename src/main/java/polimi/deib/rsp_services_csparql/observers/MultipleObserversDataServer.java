@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import polimi.deib.rsp_services_csparql.commons.Csparql_Query;
 import polimi.deib.rsp_services_csparql.queries.SingleQueryDataServer;
-import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlObserver;
+import polimi.deib.rsp_services_csparql.queries.utilities.Csparql_Observer_Descriptor;
 
 import com.google.gson.Gson;
 
@@ -50,15 +50,15 @@ public class MultipleObserversDataServer  extends ServerResource {
 	public void getObserversInfo(){
 
 		csparqlQueryTable = (Hashtable<String, Csparql_Query>) getContext().getAttributes().get("csaprqlQueryTable");
-		ArrayList<CsparqlObserver> observers = new ArrayList<CsparqlObserver>();
+		ArrayList<Csparql_Observer_Descriptor> observers = new ArrayList<Csparql_Observer_Descriptor>();
 
 		String queryName = (String) this.getRequest().getAttributes().get("queryname");
 
 		try{
 			if(queryName.contains(queryName)){
 				Csparql_Query csparqlQuery = csparqlQueryTable.get(queryName);
-				Set<Entry<String, CsparqlObserver>> obsSet = csparqlQuery.getObservers().entrySet();
-				for(Entry<String, CsparqlObserver> eObserver : obsSet){
+				Set<Entry<String, Csparql_Observer_Descriptor>> obsSet = csparqlQuery.getObservers().entrySet();
+				for(Entry<String, Csparql_Observer_Descriptor> eObserver : obsSet){
 					observers.add(eObserver.getValue());
 				}
 				this.getResponse().setStatus(Status.SUCCESS_OK,"Observers informations succesfully extracted");

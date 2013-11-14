@@ -23,18 +23,18 @@ package polimi.deib.rsp_services_csparql.queries.utilities;
 import eu.larkc.csparql.common.RDFTable;
 import eu.larkc.csparql.common.streams.format.GenericObserver;
 
-public class CsparqlObserver {
+public class Csparql_Observer_Descriptor {
 	
 	private String id;
 	private GenericObserver<RDFTable> observer;
 	
-	public CsparqlObserver(String id, GenericObserver<RDFTable> observer) {
+	public Csparql_Observer_Descriptor(String id, GenericObserver<RDFTable> observer) {
 		super();
 		this.id = id;
 		this.observer = observer;
 	}
 	
-	public CsparqlObserver() {
+	public Csparql_Observer_Descriptor() {
 		super();
 	}
 	

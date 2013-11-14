@@ -3,9 +3,10 @@ package polimi.deib.rsp_services_csparql.commons;
 import java.util.Collection;
 import java.util.HashMap;
 
-import polimi.deib.rsp_services.commons.Rsp_services_Component_Status;
-import polimi.deib.rsp_services.interfaces.Continuous_Query_Interface;
-import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlObserver;
+import org.streamreasoning.rsp_services.commons.Rsp_services_Component_Status;
+import org.streamreasoning.rsp_services.interfaces.Continuous_Query_Interface;
+
+import polimi.deib.rsp_services_csparql.queries.utilities.Csparql_Observer_Descriptor;
 import eu.larkc.csparql.core.engine.CsparqlQueryResultProxy;
 
 public class Csparql_Query implements Continuous_Query_Interface{
@@ -16,7 +17,7 @@ public class Csparql_Query implements Continuous_Query_Interface{
 	private Collection<String> streams;
 	private String body;
 	private CsparqlQueryResultProxy resultProxy;
-	private HashMap<String, CsparqlObserver> observers;
+	private HashMap<String, Csparql_Observer_Descriptor> observers;
 	private Rsp_services_Component_Status status;
 
 	public Csparql_Query() {
@@ -26,7 +27,7 @@ public class Csparql_Query implements Continuous_Query_Interface{
 	public Csparql_Query(String id, String name, String type,
 			Collection<String> streams, String body,
 			CsparqlQueryResultProxy resultProxy,
-			HashMap<String, CsparqlObserver> observers, Rsp_services_Component_Status status) {
+			HashMap<String, Csparql_Observer_Descriptor> observers, Rsp_services_Component_Status status) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -42,7 +43,7 @@ public class Csparql_Query implements Continuous_Query_Interface{
 	public Object addObserver(Object observer) {
 		boolean result = false;
 		try{
-			CsparqlObserver obs = (CsparqlObserver) observer;
+			Csparql_Observer_Descriptor obs = (Csparql_Observer_Descriptor) observer;
 			this.resultProxy.addObserver(obs.getObserver());
 			observers.put(obs.getId(), obs);
 			result = true;
@@ -57,7 +58,7 @@ public class Csparql_Query implements Continuous_Query_Interface{
 	public Object removeObserver(Object observerID) {
 		boolean result = false;
 		try{
-			CsparqlObserver cso = observers.get(observerID);
+			Csparql_Observer_Descriptor cso = observers.get(observerID);
 			resultProxy.removeObserver(cso.getObserver());
 			observers.remove(observerID);
 			result = true;
@@ -106,11 +107,11 @@ public class Csparql_Query implements Continuous_Query_Interface{
 		this.resultProxy = resultProxy;
 	}
 
-	public HashMap<String, CsparqlObserver> getObservers() {
+	public HashMap<String, Csparql_Observer_Descriptor> getObservers() {
 		return observers;
 	}
 
-	public void setObservers(HashMap<String, CsparqlObserver> observers) {
+	public void setObservers(HashMap<String, Csparql_Observer_Descriptor> observers) {
 		this.observers = observers;
 	}
 	

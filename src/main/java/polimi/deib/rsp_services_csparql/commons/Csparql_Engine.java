@@ -3,10 +3,10 @@ package polimi.deib.rsp_services_csparql.commons;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.streamreasoning.rsp_services.interfaces.RDF_Stream_Processor_Interface;
 
 import eu.larkc.csparql.cep.api.RdfStream;
 import eu.larkc.csparql.core.engine.CsparqlEngineImpl;
-import polimi.deib.rsp_services.interfaces.RDF_Stream_Processor_Interface;
 import polimi.deib.rsp_services_csparql.configuration.Config;
 
 public class Csparql_Engine implements RDF_Stream_Processor_Interface{
@@ -40,6 +40,19 @@ public class Csparql_Engine implements RDF_Stream_Processor_Interface{
 		boolean result = false;
 		try{
 			engine.unregisterStream(streamName);
+			result = true;
+		}catch(Exception e){
+			result = false;
+		}
+		return result;
+	}
+	
+	@Override
+	public Object unregisterStream(Object stream) {
+		RdfStream RDFstream = (RdfStream) stream;
+		boolean result = false;
+		try{
+			engine.unregisterStream(RDFstream.getIRI());
 			result = true;
 		}catch(Exception e){
 			result = false;

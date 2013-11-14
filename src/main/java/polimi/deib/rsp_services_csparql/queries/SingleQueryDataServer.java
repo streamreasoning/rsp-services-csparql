@@ -37,14 +37,14 @@ import org.restlet.resource.Put;
 import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.streamreasoning.rsp_services.commons.Rsp_services_Component_Status;
 
-import polimi.deib.rsp_services.commons.Rsp_services_Component_Status;
 import polimi.deib.rsp_services_csparql.commons.Csparql_Engine;
 import polimi.deib.rsp_services_csparql.commons.Csparql_Query;
 import polimi.deib.rsp_services_csparql.commons.Csparql_RDF_Stream;
 import polimi.deib.rsp_services_csparql.configuration.Config;
 import polimi.deib.rsp_services_csparql.observers.utilities.Observer4HTTP;
-import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlObserver;
+import polimi.deib.rsp_services_csparql.queries.utilities.Csparql_Observer_Descriptor;
 import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlQueryDescriptionForGet;
 
 import com.google.gson.Gson;
@@ -98,7 +98,7 @@ public class SingleQueryDataServer extends ServerResource {
 							String newStreamName = Config.getInstance().getHostName() + "streams/" + parameterQueryName;
 							if(!csparqlStreamTable.contains(newStreamName)){
 								CsparqlQueryResultProxy rp = (CsparqlQueryResultProxy) engine.registerQuery(queryBody);
-								csparqlQueryTable.put(parameterQueryName, new Csparql_Query(rp.getId(), parameterQueryName, queryType, inputStreamNameList, queryBody, rp, new HashMap<String, CsparqlObserver>(), Rsp_services_Component_Status.RUNNING));
+								csparqlQueryTable.put(parameterQueryName, new Csparql_Query(rp.getId(), parameterQueryName, queryType, inputStreamNameList, queryBody, rp, new HashMap<String, Csparql_Observer_Descriptor>(), Rsp_services_Component_Status.RUNNING));
 								RDFStreamFormatter stream = new RDFStreamFormatter(newStreamName);
 								csparqlStreamTable.put(newStreamName, new Csparql_RDF_Stream(stream, Rsp_services_Component_Status.RUNNING));
 								RdfStream rdfStream = null;
@@ -128,7 +128,7 @@ public class SingleQueryDataServer extends ServerResource {
 							}
 						} else {
 							CsparqlQueryResultProxy rp = (CsparqlQueryResultProxy) engine.registerQuery(queryBody);
-							csparqlQueryTable.put(parameterQueryName, new Csparql_Query(rp.getId(), parameterQueryName, queryType, inputStreamNameList, queryBody, rp, new HashMap<String, CsparqlObserver>(), Rsp_services_Component_Status.RUNNING));
+							csparqlQueryTable.put(parameterQueryName, new Csparql_Query(rp.getId(), parameterQueryName, queryType, inputStreamNameList, queryBody, rp, new HashMap<String, Csparql_Observer_Descriptor>(), Rsp_services_Component_Status.RUNNING));
 							getContext().getAttributes().put("csaprqlinputStreamTable", csparqlStreamTable);
 							getContext().getAttributes().put("csaprqlQueryTable", csparqlQueryTable);
 							getContext().getAttributes().put("csparqlengine", engine);
@@ -245,7 +245,7 @@ public class SingleQueryDataServer extends ServerResource {
 				if(action == null){
 					String observerID = UUID.randomUUID().toString();
 					String observerURI = server_address + "/queries/" + queryName + "/observers/" + observerID;
-					CsparqlObserver csObs = new CsparqlObserver(observerID, new Observer4HTTP(callbackUrl, Config.getInstance().getSendEmptyResultsProperty()));
+					Csparql_Observer_Descriptor csObs = new Csparql_Observer_Descriptor(observerID, new Observer4HTTP(callbackUrl, Config.getInstance().getSendEmptyResultsProperty()));
 					csparqlQuery.addObserver(csObs);
 					this.getResponse().setStatus(Status.SUCCESS_OK,"Observer succesfully registered");
 					this.getResponse().setEntity(gson.toJson(observerURI), MediaType.APPLICATION_JSON);	

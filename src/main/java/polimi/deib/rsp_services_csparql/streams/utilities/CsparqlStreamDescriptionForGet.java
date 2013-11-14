@@ -20,7 +20,7 @@
  ******************************************************************************/
 package polimi.deib.rsp_services_csparql.streams.utilities;
 
-import polimi.deib.rsp_services.commons.Rsp_services_Component_Status;
+import org.streamreasoning.rsp_services.commons.Rsp_services_Component_Status;
 
 public class CsparqlStreamDescriptionForGet {
 

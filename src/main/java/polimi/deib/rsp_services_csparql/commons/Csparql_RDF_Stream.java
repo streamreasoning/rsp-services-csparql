@@ -20,8 +20,9 @@
  ******************************************************************************/
 package polimi.deib.rsp_services_csparql.commons;
 
-import polimi.deib.rsp_services.commons.Rsp_services_Component_Status;
-import polimi.deib.rsp_services.interfaces.RDF_Stream_Interface;
+import org.streamreasoning.rsp_services.commons.Rsp_services_Component_Status;
+import org.streamreasoning.rsp_services.interfaces.RDF_Stream_Interface;
+
 import eu.larkc.csparql.cep.api.RdfQuadruple;
 import eu.larkc.csparql.cep.api.RdfStream;
 
