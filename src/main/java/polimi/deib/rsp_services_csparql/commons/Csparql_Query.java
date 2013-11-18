@@ -39,13 +39,22 @@ public class Csparql_Query implements Continuous_Query_Interface{
 		this.status = status;
 	}
 
+	public boolean containsObserver(String observerID){
+		if(observers.containsKey(observerID))
+			return true;
+		else
+			return false;
+	}
+
 	@Override
 	public Object addObserver(Object observer) {
 		boolean result = false;
 		try{
 			Csparql_Observer_Descriptor obs = (Csparql_Observer_Descriptor) observer;
-			this.resultProxy.addObserver(obs.getObserver());
-			observers.put(obs.getId(), obs);
+			if(!observers.containsKey(obs.getId())){
+				this.resultProxy.addObserver(obs.getObserver());
+				observers.put(obs.getId(), obs);
+			}
 			result = true;
 		} catch(Exception e){
 			result = false;
@@ -53,7 +62,7 @@ public class Csparql_Query implements Continuous_Query_Interface{
 
 		return result;
 	}
-	
+
 	@Override
 	public Object removeObserver(Object observerID) {
 		boolean result = false;
@@ -114,7 +123,7 @@ public class Csparql_Query implements Continuous_Query_Interface{
 	public void setObservers(HashMap<String, Csparql_Observer_Descriptor> observers) {
 		this.observers = observers;
 	}
-	
+
 	public String getName() {
 		return name;
 	}

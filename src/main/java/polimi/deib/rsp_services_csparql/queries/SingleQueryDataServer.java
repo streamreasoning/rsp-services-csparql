@@ -25,7 +25,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.UUID;
 
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
@@ -171,7 +170,7 @@ public class SingleQueryDataServer extends ServerResource {
 	@SuppressWarnings("unchecked")
 	@Delete
 	public void unregisterQuery(){
-
+		
 		csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
 		csparqlQueryTable = (Hashtable<String, Csparql_Query>) getContext().getAttributes().get("csaprqlQueryTable");
 		engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
@@ -185,7 +184,7 @@ public class SingleQueryDataServer extends ServerResource {
 				Csparql_Query csparqlQuery = csparqlQueryTable.get(queryName);
 				if(csparqlQuery.getType().equals("stream")){
 					String newStreamName = Config.getInstance().getHostName()  + "streams/" + csparqlQuery.getName();
-					if(csparqlStreamTable.contains(newStreamName)){
+					if(csparqlStreamTable.containsKey(newStreamName)){
 						engine.unregisterStream(newStreamName);
 						csparqlStreamTable.remove(newStreamName);
 						engine.unregisterQuery(queryName);
@@ -243,7 +242,8 @@ public class SingleQueryDataServer extends ServerResource {
 			if(csparqlQueryTable.containsKey(queryName)){
 				Csparql_Query csparqlQuery = csparqlQueryTable.get(queryName);
 				if(action == null){
-					String observerID = UUID.randomUUID().toString();
+//					String observerID = UUID.randomUUID().toString();
+					String observerID = String.valueOf(callbackUrl.hashCode());
 					String observerURI = server_address + "/queries/" + queryName + "/observers/" + observerID;
 					Csparql_Observer_Descriptor csObs = new Csparql_Observer_Descriptor(observerID, new Observer4HTTP(callbackUrl, Config.getInstance().getSendEmptyResultsProperty()));
 					csparqlQuery.addObserver(csObs);
