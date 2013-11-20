@@ -46,7 +46,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>polimi.deib</groupId>
+			<groupId>org.streamreasoning</groupId>
 			<artifactId>rsp-services</artifactId>
 			<version>0.4</version>
 		</dependency>
