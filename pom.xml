@@ -50,7 +50,7 @@
 			<artifactId>rsp-services</artifactId>
 			<version>0.4</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>eu.larkc.csparql</groupId>
 			<artifactId>csparql-core</artifactId>
@@ -188,7 +188,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>polimi.deib.rsp_services_csparql.server.rsp_services_server</mainClass>
+							<mainClass>polimi.deib.rsp_services_csparql.server.rsp_services_csparql_server</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -213,6 +213,13 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- <plugin> <artifactId>maven-assembly-plugin</artifactId> <configuration> 
+				<archive> <manifest> <mainClass>polimi.deib.rsp_services_csparql.server.rsp_services_server</mainClass> 
+				</manifest> </archive> <descriptorRefs> <descriptorRef>jar-with-dependencies</descriptorRef> 
+				</descriptorRefs> <appendAssemblyId>false</appendAssemblyId> </configuration> 
+				<executions> <execution> <phase>package</phase> <goals> <goal>single</goal> 
+				</goals> </execution> </executions> </plugin> -->
 		</plugins>
 	</build>
 </project>
