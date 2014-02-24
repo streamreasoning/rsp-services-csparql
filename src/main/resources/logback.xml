@@ -67,7 +67,7 @@
 		<appender-ref ref="CSPARQL_ENGINE" />
 	</logger>
 	
-	<logger name="org.apache.jena.riot" level="OFF" />
+	<logger name="org.apache.jena.riot.*" level="OFF" />
 	
 	<logger name="ch.qos.logback.*" level="OFF" />
 

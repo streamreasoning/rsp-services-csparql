@@ -349,9 +349,9 @@ public class SingleQueryDataServer extends ServerResource {
 		try{
 			if(csparqlQueryTable.containsKey(queryName)){
 				Csparql_Query csparqlQuery = csparqlQueryTable.get(queryName);
-				System.out.println(gson.toJson(new CsparqlQueryDescriptionForGet(csparqlQuery.getQueryID(), csparqlQuery.getName(), csparqlQuery.getType(), csparqlQuery.getStreams(), csparqlQuery.getQueryBody(), csparqlQuery.getQueryStatus())));
+				System.out.println(gson.toJson(new CsparqlQueryDescriptionForGet(csparqlQuery.getName(), csparqlQuery.getType(), csparqlQuery.getStreams(), csparqlQuery.getQueryBody(), csparqlQuery.getQueryStatus())));
 				this.getResponse().setStatus(Status.SUCCESS_OK,queryName + " succesfully unregistered");
-				this.getResponse().setEntity(gson.toJson(new CsparqlQueryDescriptionForGet(csparqlQuery.getQueryID(), csparqlQuery.getName(), csparqlQuery.getType(), csparqlQuery.getStreams(), csparqlQuery.getQueryBody(), csparqlQuery.getQueryStatus())), MediaType.APPLICATION_JSON);
+				this.getResponse().setEntity(gson.toJson(new CsparqlQueryDescriptionForGet(csparqlQuery.getName(), csparqlQuery.getType(), csparqlQuery.getStreams(), csparqlQuery.getQueryBody(), csparqlQuery.getQueryStatus())), MediaType.APPLICATION_JSON);
 
 			} else {
 				this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,queryName + " ID is not associated to any registered query");

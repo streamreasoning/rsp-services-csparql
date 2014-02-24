@@ -28,7 +28,6 @@ import org.streamreasoning.rsp_services.commons.Rsp_services_Component_Status;
 public class CsparqlQueryDescriptionForGet {
 	
 	private String id;
-	private String name;
 	private String type;
 	private Collection<String> streams;
 	private String body;
@@ -38,11 +37,10 @@ public class CsparqlQueryDescriptionForGet {
 		super();
 	}
 
-	public CsparqlQueryDescriptionForGet(String id, String name, String type,
+	public CsparqlQueryDescriptionForGet(String id, String type,
 			Collection<String> streams, String body,Rsp_services_Component_Status status) {
 		super();
 		this.id = id;
-		this.name = name;
 		this.type = type;
 		this.streams = streams;
 		this.body = body;
@@ -55,14 +53,6 @@ public class CsparqlQueryDescriptionForGet {
 
 	public void setId(String id) {
 		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public String getType() {

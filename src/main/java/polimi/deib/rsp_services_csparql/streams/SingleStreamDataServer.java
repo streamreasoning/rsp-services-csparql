@@ -196,7 +196,7 @@ public class SingleStreamDataServer extends ServerResource {
 						}
 					}
 				}
-
+			
 			} else {
 				this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"Specified stream does not exists");
 				this.getResponse().setEntity(gson.toJson("Specified stream does not exists"), MediaType.APPLICATION_JSON);

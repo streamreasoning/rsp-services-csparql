@@ -55,7 +55,7 @@ public class MultipleQueriesDataServer extends ServerResource {
 			Csparql_Query registeredCsparqlQuery;
 			for(String key : keySet){
 				registeredCsparqlQuery = csparqlQueryTable.get(key); 
-				queryDescriptionList.add(new CsparqlQueryDescriptionForGet(registeredCsparqlQuery.getQueryID(), registeredCsparqlQuery.getName(), registeredCsparqlQuery.getType(), registeredCsparqlQuery.getStreams(), registeredCsparqlQuery.getQueryBody(), registeredCsparqlQuery.getQueryStatus()));
+				queryDescriptionList.add(new CsparqlQueryDescriptionForGet(registeredCsparqlQuery.getName(), registeredCsparqlQuery.getType(), registeredCsparqlQuery.getStreams(), registeredCsparqlQuery.getQueryBody(), registeredCsparqlQuery.getQueryStatus()));
 			}
 
 			this.getResponse().setStatus(Status.SUCCESS_OK,"Information about queries succesfully extracted");
