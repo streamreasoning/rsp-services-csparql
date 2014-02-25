@@ -187,7 +187,7 @@ public class SingleQueryDataServer extends ServerResource {
 					if(csparqlStreamTable.containsKey(newStreamName)){
 						engine.unregisterStream(newStreamName);
 						csparqlStreamTable.remove(newStreamName);
-						engine.unregisterQuery(queryName);
+						engine.unregisterQuery(csparqlQuery.getQueryID());
 						csparqlQueryTable.remove(queryName);
 						getContext().getAttributes().put("csaprqlinputStreamTable", csparqlStreamTable);
 						getContext().getAttributes().put("csaprqlQueryTable", csparqlQueryTable);
@@ -196,7 +196,7 @@ public class SingleQueryDataServer extends ServerResource {
 						this.getResponse().setEntity(gson.toJson("Query and stream " + newStreamName + " succesfully unregistered"), MediaType.APPLICATION_JSON);
 					}
 				} else {
-					engine.unregisterQuery(csparqlQueryTable.get(queryName).getQueryID());
+					engine.unregisterQuery(csparqlQuery.getQueryID());
 					csparqlQueryTable.remove(queryName);
 					getContext().getAttributes().put("csaprqlinputStreamTable", csparqlStreamTable);
 					getContext().getAttributes().put("csaprqlQueryTable", csparqlQueryTable);
