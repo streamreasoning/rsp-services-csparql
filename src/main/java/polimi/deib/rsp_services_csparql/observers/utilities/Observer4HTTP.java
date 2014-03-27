@@ -29,11 +29,10 @@ import java.util.Observable;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,12 +44,11 @@ public class Observer4HTTP implements Continuous_Query_Observer_Interface{
 
 	private String clientAddress;
 
-	private DefaultHttpClient client = null;
+	private HttpClient client = null;
 	private HttpPost method = null;
 	private URI uri;
 	private HttpResponse httpResponse;
 	private HttpEntity httpEntity;
-	private HttpParams httpParams;
 	private boolean sendEmptyResults;
 
 	private Logger logger = LoggerFactory.getLogger(Observer4HTTP.class.getName());
@@ -122,25 +120,22 @@ public class Observer4HTTP implements Continuous_Query_Observer_Interface{
 		try {
 
 			if(sendEmptyResults){
+								
 				if(!q.getJsonSerialization().isEmpty()){
+					
 					method.setEntity(new StringEntity(q.getJsonSerialization()));
 
 					httpResponse = client.execute(method);
 					httpEntity = httpResponse.getEntity();
 
-					httpParams = client.getParams();
-					HttpConnectionParams.setConnectionTimeout(httpParams, 30000);
-
 					EntityUtils.consume(httpEntity);
 				}
 			} else {
+								
 				method.setEntity(new StringEntity(q.getJsonSerialization()));
 
 				httpResponse = client.execute(method);
 				httpEntity = httpResponse.getEntity();
-
-				httpParams = client.getParams();
-				HttpConnectionParams.setConnectionTimeout(httpParams, 30000);
 
 				EntityUtils.consume(httpEntity);
 			}
