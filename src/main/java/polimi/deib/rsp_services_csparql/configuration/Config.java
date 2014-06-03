@@ -31,19 +31,23 @@ public class Config {
 	private static Config _instance = null;
 	private static final Logger logger = LoggerFactory.getLogger(Config.class); 
 	
-	private Configuration config;
+	private static Configuration config;
 	
-	private Config(){
+	private Config(String propertiesFilePath){
 		try {
-			config = new PropertiesConfiguration("setup.properties");
+			config = new PropertiesConfiguration(propertiesFilePath);
 		} catch (ConfigurationException e) {
 			logger.error("Error while reading the configuration file", e);
 		}
 	}
 	
-	public static Config getInstance(){
+	public static void initialize(String propertiesFilePath){
+		_instance = new Config(propertiesFilePath);
+	}
+	
+	public static Config getInstance() throws Exception{
 		if(_instance==null)
-			_instance=new Config();
+			throw new Exception("Please initialize the configuration object at server startup");
 		return _instance;
 	}
 	
@@ -76,5 +80,9 @@ public class Config {
 	
 	public boolean getSendEmptyResultsProperty(){
 		return config.getBoolean("csparql_engine.send_empty_results");
+	}	
+	
+	public String getResourcesPath(){
+		return config.getString("rsp_server.static_resources.path");
 	}	
 }

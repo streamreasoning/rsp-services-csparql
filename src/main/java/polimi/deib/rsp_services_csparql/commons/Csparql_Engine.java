@@ -132,7 +132,7 @@ public class Csparql_Engine implements RDF_Stream_Processor_Interface{
 	}
 
 	@Override
-	public void initialize() {
+	public void initialize() throws Exception {
 		engine = new CsparqlEngineImpl();
 
 		if(Config.getInstance().getEnableTSFunction()){

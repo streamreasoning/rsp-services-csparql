@@ -28,12 +28,15 @@ import java.util.Hashtable;
 
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
+import org.restlet.engine.header.Header;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
+import org.restlet.resource.Options;
 import org.restlet.resource.Post;
 import org.restlet.resource.Put;
 import org.restlet.resource.ServerResource;
+import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.streamreasoning.rsp_services.commons.Rsp_services_Component_Status;
@@ -43,8 +46,8 @@ import polimi.deib.rsp_services_csparql.commons.Csparql_Query;
 import polimi.deib.rsp_services_csparql.commons.Csparql_RDF_Stream;
 import polimi.deib.rsp_services_csparql.configuration.Config;
 import polimi.deib.rsp_services_csparql.observers.utilities.Observer4HTTP;
-import polimi.deib.rsp_services_csparql.queries.utilities.Csparql_Observer_Descriptor;
 import polimi.deib.rsp_services_csparql.queries.utilities.CsparqlQueryDescriptionForGet;
+import polimi.deib.rsp_services_csparql.queries.utilities.Csparql_Observer_Descriptor;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -63,6 +66,18 @@ public class SingleQueryDataServer extends ServerResource {
 	private Logger logger = LoggerFactory.getLogger(SingleQueryDataServer.class.getName());
 
 	@SuppressWarnings("unchecked")
+	@Options
+	public void optionsRequestHandler(){
+		String origin = getRequest().getClientInfo().getAddress();
+		Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+		if (responseHeaders == null) {
+			responseHeaders = new Series<Header>(Header.class);
+			getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
+		}
+		responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+	}
+
+	@SuppressWarnings({ "unchecked" })
 	@Put
 	public void registerQuery(Representation rep){
 
@@ -75,6 +90,14 @@ public class SingleQueryDataServer extends ServerResource {
 		csparqlQueryTable = (Hashtable<String, Csparql_Query>) getContext().getAttributes().get("csaprqlQueryTable");
 		engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
 		String server_address = (String) getContext().getAttributes().get("complete_server_address");
+
+		String origin = getRequest().getClientInfo().getAddress();
+		Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+		if (responseHeaders == null) {
+			responseHeaders = new Series<Header>(Header.class);
+			getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
+		}
+		responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
 
 		try{
 			String queryBody = rep.getText();
@@ -135,6 +158,11 @@ public class SingleQueryDataServer extends ServerResource {
 							this.getResponse().setEntity(gson.toJson(queryURI), MediaType.APPLICATION_JSON);
 						}
 
+//						if(parameterQueryName.contains("isInWith")){
+//							Csparql_Observer_Descriptor csObs = new Csparql_Observer_Descriptor("abc", new LocalResultObserver());
+//							csparqlQueryTable.get(parameterQueryName).addObserver(csObs);
+//						}
+
 					} else {
 						this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"One or more of the specified input stream not exist");
 						this.getResponse().setEntity(gson.toJson("One or more of the specified input stream not exist"), MediaType.APPLICATION_JSON);
@@ -167,10 +195,10 @@ public class SingleQueryDataServer extends ServerResource {
 
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked" })
 	@Delete
 	public void unregisterQuery(){
-		
+
 		csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
 		csparqlQueryTable = (Hashtable<String, Csparql_Query>) getContext().getAttributes().get("csaprqlQueryTable");
 		engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
@@ -178,6 +206,14 @@ public class SingleQueryDataServer extends ServerResource {
 
 		String queryURI = (String) this.getRequest().getAttributes().get("queryname");
 		String queryName = queryURI.replace(server_address + "/queries/", "");
+
+		String origin = getRequest().getClientInfo().getAddress();
+		Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+		if (responseHeaders == null) {
+			responseHeaders = new Series<Header>(Header.class);
+			getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
+		}
+		responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
 
 		try{
 			if(csparqlQueryTable.containsKey(queryName)){
@@ -220,7 +256,7 @@ public class SingleQueryDataServer extends ServerResource {
 
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked" })
 	@Post
 	public void changeQueryStatus(Representation rep){
 
@@ -228,6 +264,15 @@ public class SingleQueryDataServer extends ServerResource {
 		csparqlQueryTable = (Hashtable<String, Csparql_Query>) getContext().getAttributes().get("csaprqlQueryTable");
 		engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
 		String server_address = (String) getContext().getAttributes().get("complete_server_address");
+
+		String origin = getRequest().getClientInfo().getAddress();
+		Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+		if (responseHeaders == null) {
+			responseHeaders = new Series<Header>(Header.class);
+			getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
+		}
+		responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+
 		try{
 
 			String callbackUrl = rep.getText();
@@ -242,7 +287,7 @@ public class SingleQueryDataServer extends ServerResource {
 			if(csparqlQueryTable.containsKey(queryName)){
 				Csparql_Query csparqlQuery = csparqlQueryTable.get(queryName);
 				if(action == null){
-//					String observerID = UUID.randomUUID().toString();
+					//					String observerID = UUID.randomUUID().toString();
 					String observerID = String.valueOf(callbackUrl.hashCode());
 					String observerURI = server_address + "/queries/" + queryName + "/observers/" + observerID;
 					Csparql_Observer_Descriptor csObs = new Csparql_Observer_Descriptor(observerID, new Observer4HTTP(callbackUrl, Config.getInstance().getSendEmptyResultsProperty()));
@@ -345,6 +390,14 @@ public class SingleQueryDataServer extends ServerResource {
 
 		String queryURI = (String) this.getRequest().getAttributes().get("queryname");
 		String queryName = queryURI.replace(server_address + "/queries/", "");
+
+		String origin = getRequest().getClientInfo().getAddress();
+		Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+		if (responseHeaders == null) {
+			responseHeaders = new Series<Header>(Header.class);
+			getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
+		}
+		responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
 
 		try{
 			if(csparqlQueryTable.containsKey(queryName)){

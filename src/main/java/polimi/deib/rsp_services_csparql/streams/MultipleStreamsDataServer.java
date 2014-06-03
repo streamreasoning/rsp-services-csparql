@@ -26,8 +26,11 @@ import java.util.Set;
 
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
+import org.restlet.engine.header.Header;
 import org.restlet.resource.Get;
+import org.restlet.resource.Options;
 import org.restlet.resource.ServerResource;
+import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,12 +44,33 @@ public class MultipleStreamsDataServer extends ServerResource {
 	private static Hashtable<String, Csparql_RDF_Stream> csparqlStreamTable;
 	private Gson gson = new Gson();
 	private Logger logger = LoggerFactory.getLogger(MultipleStreamsDataServer.class.getName());
-
+	
 	@SuppressWarnings("unchecked")
+	@Options
+	public void optionsRequestHandler(){
+		String origin = getRequest().getClientInfo().getAddress();
+		Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+		if (responseHeaders == null) {
+			responseHeaders = new Series<Header>(Header.class);
+			getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
+		}
+		responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+	}
+
+	@SuppressWarnings({ "unchecked" })
 	@Get
 	public void getStreamsInformations(){
 
 		try{
+			
+			String origin = getRequest().getClientInfo().getAddress();
+			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+			if (responseHeaders == null) {
+				responseHeaders = new Series<Header>(Header.class);
+				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
+			}
+			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+		    
 			csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
 			ArrayList<CsparqlStreamDescriptionForGet> streamDescriptionList = new ArrayList<CsparqlStreamDescriptionForGet>();
 
@@ -71,4 +95,5 @@ public class MultipleStreamsDataServer extends ServerResource {
 		}
 
 	}
+
 }

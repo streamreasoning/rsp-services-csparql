@@ -24,17 +24,26 @@ import java.io.ByteArrayInputStream;
 import java.net.URLDecoder;
 import java.util.Hashtable;
 
+import org.restlet.data.ClientInfo;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
+import org.restlet.engine.header.Header;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
+import org.restlet.resource.Options;
 import org.restlet.resource.Post;
 import org.restlet.resource.Put;
 import org.restlet.resource.ServerResource;
+import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.streamreasoning.rsp_services.commons.Rsp_services_Component_Status;
+
+import polimi.deib.rsp_services_csparql.commons.Csparql_Engine;
+import polimi.deib.rsp_services_csparql.commons.Csparql_RDF_Stream;
+import polimi.deib.rsp_services_csparql.commons.Utilities;
+import polimi.deib.rsp_services_csparql.streams.utilities.CsparqlStreamDescriptionForGet;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -42,11 +51,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
-
-import polimi.deib.rsp_services_csparql.commons.Csparql_Engine;
-import polimi.deib.rsp_services_csparql.commons.Csparql_RDF_Stream;
-import polimi.deib.rsp_services_csparql.commons.Utilities;
-import polimi.deib.rsp_services_csparql.streams.utilities.CsparqlStreamDescriptionForGet;
 
 import eu.larkc.csparql.cep.api.RdfQuadruple;
 import eu.larkc.csparql.cep.api.RdfStream;
@@ -59,10 +63,34 @@ public class SingleStreamDataServer extends ServerResource {
 	private Logger logger = LoggerFactory.getLogger(SingleStreamDataServer.class.getName());
 
 	@SuppressWarnings("unchecked")
+	@Options
+	public void optionsRequestHandler(){
+		ClientInfo c = getRequest().getClientInfo();
+		String origin = c.getAddress();
+		Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+		if (responseHeaders == null) {
+			responseHeaders = new Series<Header>(Header.class);
+			getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
+		}
+		responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+		responseHeaders.add(new Header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE"));
+
+	}
+
+	@SuppressWarnings({ "unchecked" })
 	@Put
 	public void registerStream(){
 
 		try{
+
+			String origin = getRequest().getClientInfo().getAddress();
+			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+			if (responseHeaders == null) {
+				responseHeaders = new Series<Header>(Header.class);
+				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
+			}
+			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+			
 			csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
 			engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
 
@@ -82,9 +110,9 @@ public class SingleStreamDataServer extends ServerResource {
 				this.getResponse().setEntity(gson.toJson(inputStreamName + " already exists"), MediaType.APPLICATION_JSON);
 			}
 		} catch(Exception e){
-			logger.error("Error while registering stream", e);
-			this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, Utilities.getStackTrace(e));
-			this.getResponse().setEntity(gson.toJson(Utilities.getStackTrace(e)), MediaType.APPLICATION_JSON);
+			logger.error(e.getMessage(), e);
+			this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, e.getMessage());
+			this.getResponse().setEntity(gson.toJson(e.getMessage()), MediaType.APPLICATION_JSON);
 		} finally{
 			this.getResponse().commit();
 			this.commit();	
@@ -93,10 +121,19 @@ public class SingleStreamDataServer extends ServerResource {
 
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked" })
 	@Delete
 	public void unregisterStream(){
 		try{
+
+			String origin = getRequest().getClientInfo().getAddress();
+			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+			if (responseHeaders == null) {
+				responseHeaders = new Series<Header>(Header.class);
+				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
+			}
+			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+			
 			csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
 			engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
 
@@ -126,11 +163,20 @@ public class SingleStreamDataServer extends ServerResource {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked" })
 	@Post
 	public void feedStream(Representation rep){
 
 		try{
+
+			String origin = getRequest().getClientInfo().getAddress();
+			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+			if (responseHeaders == null) {
+				responseHeaders = new Series<Header>(Header.class);
+				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
+			}
+			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+			
 			csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
 			engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
 
@@ -196,7 +242,7 @@ public class SingleStreamDataServer extends ServerResource {
 						}
 					}
 				}
-			
+
 			} else {
 				this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"Specified stream does not exists");
 				this.getResponse().setEntity(gson.toJson("Specified stream does not exists"), MediaType.APPLICATION_JSON);
@@ -278,12 +324,20 @@ public class SingleStreamDataServer extends ServerResource {
 
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked" })
 	@Get
 	public void getStreamInformations(){
 
 		try{
 
+			String origin = getRequest().getClientInfo().getAddress();
+			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+			if (responseHeaders == null) {
+				responseHeaders = new Series<Header>(Header.class);
+				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
+			}
+			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+			
 			csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
 
 			String inputStreamName = URLDecoder.decode((String) this.getRequest().getAttributes().get("streamname"), "UTF-8");
