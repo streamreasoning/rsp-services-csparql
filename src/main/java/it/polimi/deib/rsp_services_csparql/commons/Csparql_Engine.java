@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.streamreasoning.rsp_services.interfaces.RDF_Stream_Processor_Interface;
 
 import eu.larkc.csparql.cep.api.RdfStream;
+import eu.larkc.csparql.common.RDFTable;
 import eu.larkc.csparql.core.engine.CsparqlEngineImpl;
 
 public class Csparql_Engine implements RDF_Stream_Processor_Interface{
@@ -155,6 +156,10 @@ public class Csparql_Engine implements RDF_Stream_Processor_Interface{
 
 	public void queryStaticKnowledge(String queryBody){
 		engine.execUpdateQueryOverDatasource(queryBody);
+	}
+
+	public RDFTable evaluateQueryOverDatasource(String queryBody) {
+		return engine.evaluateQueryOverDatasource(queryBody);
 	}
 
 }
