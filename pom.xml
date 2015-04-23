@@ -22,7 +22,7 @@ This work was partially supported by the European project LarKC (FP7-215535) and
 
 	<groupId>polimi.deib</groupId>
 	<artifactId>rsp-services-csparql</artifactId>
-	<version>0.4.9</version>
+	<version>0.4.8</version>
 	<packaging>jar</packaging>
 
 	<name>rsp-services-csparql</name>
