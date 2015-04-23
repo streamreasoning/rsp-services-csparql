@@ -119,11 +119,12 @@ public class Observer4HTTP implements Continuous_Query_Observer_Interface{
 
 		try {
 
-			if(sendEmptyResults){
-								
-				if(!q.getJsonSerialization().isEmpty()){
+			String jsonSerialization = q.getJsonSerialization();
+			if (!sendEmptyResults) {
+				
+				if (!isEmptyResult(jsonSerialization)) {
 					
-					method.setEntity(new StringEntity(q.getJsonSerialization()));
+					method.setEntity(new StringEntity(jsonSerialization));
 
 					httpResponse = client.execute(method);
 					httpEntity = httpResponse.getEntity();
@@ -132,7 +133,7 @@ public class Observer4HTTP implements Continuous_Query_Observer_Interface{
 				}
 			} else {
 								
-				method.setEntity(new StringEntity(q.getJsonSerialization()));
+				method.setEntity(new StringEntity(jsonSerialization));
 
 				httpResponse = client.execute(method);
 				httpEntity = httpResponse.getEntity();
@@ -151,5 +152,9 @@ public class Observer4HTTP implements Continuous_Query_Observer_Interface{
 		} finally {
 			method.releaseConnection();
 		}		
+	}
+	
+	private boolean isEmptyResult(String json) {
+		return json.matches("\\{\\s*\\}") || json.matches("[\\s\\S]*\"bindings\"\\s*:\\s*\\[\\s*\\][\\s\\S]*");
 	}
 }
