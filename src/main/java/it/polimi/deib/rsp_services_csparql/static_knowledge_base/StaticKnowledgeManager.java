@@ -107,7 +107,7 @@ public class StaticKnowledgeManager extends ServerResource {
 			this.getResponse().setEntity((jsonSerialization), MediaType.APPLICATION_JSON);
 
 		} catch (Exception e) {
-			logger.error("Problem while accessing internal static knowledge base");
+			logger.error("Problem while accessing internal static knowledge base: {}", e.getMessage());
 			this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"Problem during query Operation");
 			this.getResponse().setEntity(new Gson().toJson("Problem during query Operation"), MediaType.APPLICATION_JSON);
 		} finally {

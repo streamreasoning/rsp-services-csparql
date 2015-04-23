@@ -159,7 +159,7 @@ public class Csparql_Engine implements RDF_Stream_Processor_Interface{
 	}
 
 	public RDFTable evaluateQueryOverDatasource(String queryBody) {
-		return engine.evaluateQueryOverDatasource(queryBody);
+		return engine.evaluateGeneralQueryOverDatasource(queryBody);
 	}
 
 }
