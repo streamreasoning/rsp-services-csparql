@@ -63,10 +63,12 @@ public class rsp_services_csparql_server extends Application{
 
 	public static void main(String[] args) throws Exception{
 
-		try{
-			PropertyConfigurator.configure(new URL("http://streamreasoning.org/configuration_files/rspCsparql/log4j.properties"));
-		} catch(Exception e){
-			PropertyConfigurator.configure("propertiesFiles/log4j.properties");
+		if (System.getProperty("log4j.configuration") == null) {
+			try{
+				PropertyConfigurator.configure(new URL("http://streamreasoning.org/configuration_files/rspCsparql/log4j.properties"));
+			} catch(Exception e){
+				PropertyConfigurator.configure("propertiesFiles/log4j.properties");
+			}
 		}
 
 		if(args.length > 0){
@@ -76,6 +78,9 @@ public class rsp_services_csparql_server extends Application{
 		}
 
 		Config.initialize(propertiesFilePath);
+		
+		System.setProperty("org.restlet.engine.loggerFacadeClass",
+				"org.restlet.ext.slf4j.Slf4jLoggerFacade");
 
 		engine = new Csparql_Engine();
 		engine.initialize();

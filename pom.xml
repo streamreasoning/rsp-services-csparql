@@ -22,7 +22,7 @@ This work was partially supported by the European project LarKC (FP7-215535) and
 
 	<groupId>polimi.deib</groupId>
 	<artifactId>rsp-services-csparql</artifactId>
-	<version>0.4.6</version>
+	<version>0.4.8</version>
 	<packaging>jar</packaging>
 
 	<name>rsp-services-csparql</name>
@@ -37,7 +37,7 @@ This work was partially supported by the European project LarKC (FP7-215535) and
 		<repository>
 			<id>streamreasoning_repository</id>
 			<name>Csparql server repository</name>
-			<url>http://131.175.59.106:8080/repository/streamreasoning_repository/</url>
+			<url>http://streamreasoning.org/maven/</url>
 			<layout>default</layout>
 		</repository>
 	</repositories>
@@ -87,6 +87,17 @@ This work was partially supported by the European project LarKC (FP7-215535) and
 			<groupId>org.restlet.jse</groupId>
 			<artifactId>org.restlet</artifactId>
 			<version>2.2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.restlet.jee</groupId>
+			<artifactId>org.restlet.ext.slf4j</artifactId>
+			<version>2.2.2</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.jena</groupId>
@@ -170,11 +181,14 @@ This work was partially supported by the European project LarKC (FP7-215535) and
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
+					<excludes>
+						<exclude>**/*.properties</exclude>
+					</excludes>
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>polimi.deib.rsp_services_csparql.server.rsp_services_csparql_server</mainClass>
+							<mainClass>it.polimi.deib.rsp_services_csparql.server.rsp_services_csparql_server</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

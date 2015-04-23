@@ -20,6 +20,8 @@
  ******************************************************************************/
 package it.polimi.deib.rsp_services_csparql.configuration;
 
+import java.util.Iterator;
+
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -36,6 +38,12 @@ public class Config {
 	private Config(String propertiesFilePath){
 		try {
 			config = new PropertiesConfiguration(propertiesFilePath);
+			for (Iterator<String> iterator = config.getKeys(); iterator.hasNext();) {
+				String property = iterator.next();
+				String sysValue = System.getProperty(property);
+				if (sysValue!=null)
+					config.setProperty(property, sysValue);
+			}
 		} catch (ConfigurationException e) {
 			logger.error("Error while reading the configuration file", e);
 		}
