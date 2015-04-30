@@ -24,8 +24,8 @@ import it.polimi.deib.rsp_services_csparql.commons.Csparql_Engine;
 import it.polimi.deib.rsp_services_csparql.commons.Csparql_RDF_Stream;
 import it.polimi.deib.rsp_services_csparql.commons.Utilities;
 import it.polimi.deib.rsp_services_csparql.streams.utilities.CsparqlStreamDescriptionForGet;
+import it.polimi.deib.rsp_services_csparql.streams.utilities.InputDataUnmarshaller;
 
-import java.io.ByteArrayInputStream;
 import java.net.URLDecoder;
 import java.util.Hashtable;
 
@@ -48,7 +48,6 @@ import org.streamreasoning.rsp_services.commons.Rsp_services_Component_Status;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
@@ -56,6 +55,8 @@ import eu.larkc.csparql.cep.api.RdfQuadruple;
 import eu.larkc.csparql.cep.api.RdfStream;
 
 public class SingleStreamDataServer extends ServerResource {
+	
+	private static InputDataUnmarshaller inputDataUnmarshaller = null;
 
 	private static Hashtable<String, Csparql_RDF_Stream> csparqlStreamTable;
 	private Csparql_Engine engine;
@@ -185,64 +186,19 @@ public class SingleStreamDataServer extends ServerResource {
 			if(csparqlStreamTable.containsKey(inputStreamName)){
 				Csparql_RDF_Stream streamRepresentation = csparqlStreamTable.get(inputStreamName);
 
-				String jsonSerialization = rep.getText();
+				Model model = getInputDataUnmarshaller().unmarshal(rep.getText());					
+				
+				long ts = System.currentTimeMillis();
 
-				Model model = ModelFactory.createDefaultModel();
-
-				try{
-					model.read(new ByteArrayInputStream(jsonSerialization.getBytes("UTF-8")),null,"RDF/JSON");
-					long ts = System.currentTimeMillis();
-
-					StmtIterator it = model.listStatements();
-					while(it.hasNext()){
-						Statement st = it.next();
-						streamRepresentation.feed_RDF_stream(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
-					}
-
-					this.getResponse().setStatus(Status.SUCCESS_OK,"Stream " + inputStreamName + " succesfully feeded");
-					this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully feeded"), MediaType.APPLICATION_JSON);
-				} catch(Exception e){
-					try{
-						model.read(new ByteArrayInputStream(jsonSerialization.getBytes("UTF-8")),null,"RDF/XML");
-						long ts = System.currentTimeMillis();
-
-						StmtIterator it = model.listStatements();
-						while(it.hasNext()){
-							Statement st = it.next();
-							streamRepresentation.feed_RDF_stream(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
-						}
-
-						this.getResponse().setStatus(Status.SUCCESS_OK,"Stream " + inputStreamName + " succesfully feeded");
-						this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully feeded"), MediaType.APPLICATION_JSON);
-					} catch(Exception e1){
-						try{
-							model.read(new ByteArrayInputStream(jsonSerialization.getBytes("UTF-8")),null,"N-TRIPLE");
-							long ts = System.currentTimeMillis();
-
-							StmtIterator it = model.listStatements();
-							while(it.hasNext()){
-								Statement st = it.next();
-								streamRepresentation.feed_RDF_stream(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
-							}
-
-							this.getResponse().setStatus(Status.SUCCESS_OK,"Stream " + inputStreamName + " succesfully feeded");
-							this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully feeded"), MediaType.APPLICATION_JSON);
-						} catch(Exception e2){
-							model.read(new ByteArrayInputStream(jsonSerialization.getBytes("UTF-8")),null,"TURTLE");
-							long ts = System.currentTimeMillis();
-
-							StmtIterator it = model.listStatements();
-							while(it.hasNext()){
-								Statement st = it.next();
-								streamRepresentation.feed_RDF_stream(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
-							}
-
-							this.getResponse().setStatus(Status.SUCCESS_OK,"Stream " + inputStreamName + " succesfully feeded");
-							this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully feeded"), MediaType.APPLICATION_JSON);
-						}
-					}
+				StmtIterator it = model.listStatements();
+				while(it.hasNext()){
+					Statement st = it.next();
+					streamRepresentation.feed_RDF_stream(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
 				}
 
+				this.getResponse().setStatus(Status.SUCCESS_OK,"Stream " + inputStreamName + " succesfully feeded");
+				this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully feeded"), MediaType.APPLICATION_JSON);
+					
 			} else {
 				this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"Specified stream does not exists");
 				this.getResponse().setEntity(gson.toJson("Specified stream does not exists"), MediaType.APPLICATION_JSON);
@@ -322,6 +278,29 @@ public class SingleStreamDataServer extends ServerResource {
 		//			this.release();
 		//		}
 
+	}
+
+	private InputDataUnmarshaller getInputDataUnmarshaller() {
+		if (inputDataUnmarshaller  == null) {
+			try {
+				inputDataUnmarshaller = InputDataUnmarshaller.DEFAULT_INPUT_DATA_UNMARSHALLER_IMPL.newInstance();
+			} catch (Exception e) { // this should not happen
+				throw new RuntimeException(e);
+			}
+			String className = System.getProperty(InputDataUnmarshaller.INPUT_DATA_UNMARSHALLER_IMPL_PROPERTY_NAME);
+			if (className != null){
+				try {
+					inputDataUnmarshaller = (InputDataUnmarshaller) getClass()
+							.getClassLoader().loadClass(className).newInstance();
+				}
+				catch (Exception e) {
+					logger.error("Provided InputDataUnmarshaller implementation {} raised an exception "
+							+ "while trying to load the class, the default one will be used", className, e);
+				}
+			}
+			logger.debug("Using {} as InputDataUnmarshaller implementation", inputDataUnmarshaller.getClass().getName());
+		}
+		return inputDataUnmarshaller;
 	}
 
 	@SuppressWarnings({ "unchecked" })
