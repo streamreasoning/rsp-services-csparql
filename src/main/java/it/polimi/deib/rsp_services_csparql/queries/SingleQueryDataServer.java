@@ -57,6 +57,10 @@ import eu.larkc.csparql.core.engine.CsparqlQueryResultProxy;
 import eu.larkc.csparql.core.engine.RDFStreamFormatter;
 
 public class SingleQueryDataServer extends ServerResource {
+	
+	private static final String OBSERVER4HTTP_IMPL_PROPERTY_NAME = "it.polimi.deib.rsp_services_csparql.observers.Observer4HTTPImpl";
+	private static final Class<Observer4HTTP> DEFAULT_OBSERVER4HTTP_IMPL = Observer4HTTP.class;
+	private static Class<? extends Observer4HTTP> observer4HTTPImpl = null;
 
 	private static Hashtable<String, Csparql_Query> csparqlQueryTable;
 	private static Hashtable<String, Csparql_RDF_Stream> csparqlStreamTable;
@@ -298,7 +302,12 @@ public class SingleQueryDataServer extends ServerResource {
 					//					String observerID = UUID.randomUUID().toString();
 					String observerID = String.valueOf(callbackUrl.hashCode());
 					String observerURI = serverAddress + "/queries/" + queryName + "/observers/" + observerID;
-					Csparql_Observer_Descriptor csObs = new Csparql_Observer_Descriptor(observerID, new Observer4HTTP(callbackUrl, Config.getInstance().getSendEmptyResultsProperty()));
+					if (observer4HTTPImpl == null) {
+						observer4HTTPImpl = getObserver4HTTPImplClass();
+						logger.debug("Using {} as Observer4HTTP implementation", observer4HTTPImpl);
+					}
+					Observer4HTTP observer = observer4HTTPImpl.getDeclaredConstructor(String.class).newInstance(callbackUrl);
+					Csparql_Observer_Descriptor csObs = new Csparql_Observer_Descriptor(observerID, observer);
 					csparqlQuery.addObserver(csObs);
 					this.getResponse().setStatus(Status.SUCCESS_OK,"Observer succesfully registered");
 					this.getResponse().setEntity(gson.toJson(observerURI), MediaType.APPLICATION_JSON);	
@@ -345,6 +354,20 @@ public class SingleQueryDataServer extends ServerResource {
 			this.commit();	
 			this.release();
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private Class<? extends Observer4HTTP> getObserver4HTTPImplClass() {
+		String className = System.getProperty(OBSERVER4HTTP_IMPL_PROPERTY_NAME);
+		Class<? extends Observer4HTTP> clazz;
+		try {
+			clazz = (Class<? extends Observer4HTTP>) getClass()
+					.getClassLoader().loadClass(className);
+		}
+		catch (Exception e) {
+			clazz = DEFAULT_OBSERVER4HTTP_IMPL;
+		}
+		return clazz;
 	}
 
 	//	@SuppressWarnings("unchecked")

@@ -20,6 +20,8 @@
  ******************************************************************************/
 package it.polimi.deib.rsp_services_csparql.observers.utilities;
 
+import it.polimi.deib.rsp_services_csparql.configuration.Config;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -42,7 +44,7 @@ import eu.larkc.csparql.common.RDFTable;
 
 public class Observer4HTTP implements Continuous_Query_Observer_Interface{
 
-	private String clientAddress;
+	protected String clientAddress;
 
 	private HttpClient client = null;
 	private HttpPost method = null;
@@ -53,10 +55,15 @@ public class Observer4HTTP implements Continuous_Query_Observer_Interface{
 
 	private Logger logger = LoggerFactory.getLogger(Observer4HTTP.class.getName());
 
-	public Observer4HTTP(String clientAddress, boolean sendEmptyResults) {
+	public Observer4HTTP(String clientAddress) {
 		super();
 		this.clientAddress = clientAddress;
-		this.sendEmptyResults = sendEmptyResults;
+		try {
+			this.sendEmptyResults = Config.getInstance().getSendEmptyResultsProperty();
+		} catch (Exception e) {
+			logger.error("Error while loading sendEmptyResults property from configuration", e);
+			this.sendEmptyResults = true;
+		}
 
 		try {
 
