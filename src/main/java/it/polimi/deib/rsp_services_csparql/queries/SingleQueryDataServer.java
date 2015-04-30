@@ -300,12 +300,7 @@ public class SingleQueryDataServer extends ServerResource {
 					//					String observerID = UUID.randomUUID().toString();
 					String observerID = String.valueOf(callbackUrl.hashCode());
 					String observerURI = serverAddress + "/queries/" + queryName + "/observers/" + observerID;
-					if (observer4HTTPImpl == null) {
-						observer4HTTPImpl = getObserver4HTTPImplClass();
-						logger.debug("Using {} as Observer4HTTP implementation", observer4HTTPImpl);
-					}
-					Observer4HTTP observer = observer4HTTPImpl.getDeclaredConstructor(String.class).newInstance(callbackUrl);
-					Csparql_Observer_Descriptor csObs = new Csparql_Observer_Descriptor(observerID, observer);
+					Csparql_Observer_Descriptor csObs = new Csparql_Observer_Descriptor(observerID, getNewObserver4HTTP(callbackUrl));
 					csparqlQuery.addObserver(csObs);
 					this.getResponse().setStatus(Status.SUCCESS_OK,"Observer succesfully registered");
 					this.getResponse().setEntity(gson.toJson(observerURI), MediaType.APPLICATION_JSON);	
@@ -355,17 +350,25 @@ public class SingleQueryDataServer extends ServerResource {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Class<? extends Observer4HTTP> getObserver4HTTPImplClass() {
-		String className = System.getProperty(Observer4HTTP.OBSERVER4HTTP_IMPL_PROPERTY_NAME);
-		Class<? extends Observer4HTTP> clazz;
+	private Observer4HTTP getNewObserver4HTTP(String callBackUrl) {
+		if (observer4HTTPImpl == null) {
+			String className = System.getProperty(Observer4HTTP.OBSERVER4HTTP_IMPL_PROPERTY_NAME);
+			try {
+				observer4HTTPImpl = (Class<? extends Observer4HTTP>) getClass()
+						.getClassLoader().loadClass(className);
+			}
+			catch (Exception e) {
+				observer4HTTPImpl = Observer4HTTP.DEFAULT_OBSERVER4HTTP_IMPL;
+			}
+			logger.debug("Using {} as Observer4HTTP implementation", observer4HTTPImpl);
+		}
+		Observer4HTTP observerInstance;
 		try {
-			clazz = (Class<? extends Observer4HTTP>) getClass()
-					.getClassLoader().loadClass(className);
+			observerInstance = observer4HTTPImpl.getDeclaredConstructor(String.class).newInstance(callBackUrl);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
-		catch (Exception e) {
-			clazz = Observer4HTTP.DEFAULT_OBSERVER4HTTP_IMPL;
-		}
-		return clazz;
+		return observerInstance;
 	}
 
 	//	@SuppressWarnings("unchecked")
