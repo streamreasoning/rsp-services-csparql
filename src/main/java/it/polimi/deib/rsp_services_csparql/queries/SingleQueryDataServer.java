@@ -352,13 +352,17 @@ public class SingleQueryDataServer extends ServerResource {
 	@SuppressWarnings("unchecked")
 	private Observer4HTTP getNewObserver4HTTP(String callBackUrl) {
 		if (observer4HTTPImpl == null) {
+			observer4HTTPImpl = Observer4HTTP.DEFAULT_OBSERVER4HTTP_IMPL;
 			String className = System.getProperty(Observer4HTTP.OBSERVER4HTTP_IMPL_PROPERTY_NAME);
-			try {
-				observer4HTTPImpl = (Class<? extends Observer4HTTP>) getClass()
-						.getClassLoader().loadClass(className);
-			}
-			catch (Exception e) {
-				observer4HTTPImpl = Observer4HTTP.DEFAULT_OBSERVER4HTTP_IMPL;
+			if (className!=null) {
+				try {
+					observer4HTTPImpl = (Class<? extends Observer4HTTP>) getClass()
+							.getClassLoader().loadClass(className);
+				}
+				catch (Exception e) {
+					logger.error("Provided Observer4HTTP implementation {} raised an exception "
+							+ "while trying to load the class, the default one will be used", className, e);
+				}
 			}
 			logger.debug("Using {} as Observer4HTTP implementation", observer4HTTPImpl);
 		}
