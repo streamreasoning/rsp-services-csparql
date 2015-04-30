@@ -43,6 +43,9 @@ import org.streamreasoning.rsp_services.interfaces.Continuous_Query_Observer_Int
 import eu.larkc.csparql.common.RDFTable;
 
 public class Observer4HTTP implements Continuous_Query_Observer_Interface{
+	
+	public static final String OBSERVER4HTTP_IMPL_PROPERTY_NAME = "it.polimi.deib.rsp_services_csparql.observers.Observer4HTTPImpl";
+	public static final Class<Observer4HTTP> DEFAULT_OBSERVER4HTTP_IMPL = Observer4HTTP.class;
 
 	protected String clientAddress;
 
@@ -53,7 +56,7 @@ public class Observer4HTTP implements Continuous_Query_Observer_Interface{
 	private HttpEntity httpEntity;
 	private boolean sendEmptyResults;
 
-	private Logger logger = LoggerFactory.getLogger(Observer4HTTP.class.getName());
+	private Logger logger = LoggerFactory.getLogger(Observer4HTTP.class.getName());	
 
 	public Observer4HTTP(String clientAddress) {
 		super();

@@ -58,8 +58,6 @@ import eu.larkc.csparql.core.engine.RDFStreamFormatter;
 
 public class SingleQueryDataServer extends ServerResource {
 	
-	private static final String OBSERVER4HTTP_IMPL_PROPERTY_NAME = "it.polimi.deib.rsp_services_csparql.observers.Observer4HTTPImpl";
-	private static final Class<Observer4HTTP> DEFAULT_OBSERVER4HTTP_IMPL = Observer4HTTP.class;
 	private static Class<? extends Observer4HTTP> observer4HTTPImpl = null;
 
 	private static Hashtable<String, Csparql_Query> csparqlQueryTable;
@@ -358,14 +356,14 @@ public class SingleQueryDataServer extends ServerResource {
 
 	@SuppressWarnings("unchecked")
 	private Class<? extends Observer4HTTP> getObserver4HTTPImplClass() {
-		String className = System.getProperty(OBSERVER4HTTP_IMPL_PROPERTY_NAME);
+		String className = System.getProperty(Observer4HTTP.OBSERVER4HTTP_IMPL_PROPERTY_NAME);
 		Class<? extends Observer4HTTP> clazz;
 		try {
 			clazz = (Class<? extends Observer4HTTP>) getClass()
 					.getClassLoader().loadClass(className);
 		}
 		catch (Exception e) {
-			clazz = DEFAULT_OBSERVER4HTTP_IMPL;
+			clazz = Observer4HTTP.DEFAULT_OBSERVER4HTTP_IMPL;
 		}
 		return clazz;
 	}
