@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This document adheres to [keep-a-changelog].
 
-## [Unreleased][unreleased]
+## [0.4.8-modaclouds]
 
 ### Added
 - the possibility to use a custom unmarshaller for input data (e.g.: to reduce network traffic)
@@ -18,5 +18,5 @@ This document adheres to [keep-a-changelog].
 ### Fixed
 - temporary fix to allow inference rules to be used in the last version of the csparql-engine
 
-[unreleased]: https://github.com/streamreasoning/rsp-services-csparql/compare/0.4.8...0.4.8-modaclouds
+[0.4.8-modaclouds]: https://github.com/streamreasoning/rsp-services-csparql/compare/0.4.8...0.4.8-modaclouds
 [keep-a-changelog]: https://github.com/olivierlacan/keep-a-changelog
