@@ -18,5 +18,5 @@ This document adheres to [keep-a-changelog].
 ### Fixed
 - temporary fix to allow inference rules to be used in the last version of the csparql-engine
 
-[unreleased]: https://github.com/streamreasoning/rsp-services-csparql/compare/v0.4.8...HEAD
-[keep-a-changelog](https://github.com/olivierlacan/keep-a-changelog)
+[unreleased]: https://github.com/streamreasoning/rsp-services-csparql/compare/0.4.8...0.4.8-modaclouds
+[keep-a-changelog]: https://github.com/olivierlacan/keep-a-changelog
