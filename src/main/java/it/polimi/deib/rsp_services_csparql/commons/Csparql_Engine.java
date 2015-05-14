@@ -23,12 +23,14 @@ package it.polimi.deib.rsp_services_csparql.commons;
 
 import it.polimi.deib.rsp_services_csparql.configuration.Config;
 
+import org.restlet.engine.io.IoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.streamreasoning.rsp_services.interfaces.RDF_Stream_Processor_Interface;
 
 import eu.larkc.csparql.cep.api.RdfStream;
 import eu.larkc.csparql.common.RDFTable;
+import eu.larkc.csparql.common.utils.ReasonerChainingType;
 import eu.larkc.csparql.core.engine.CsparqlEngineImpl;
 
 public class Csparql_Engine implements RDF_Stream_Processor_Interface{
@@ -89,7 +91,11 @@ public class Csparql_Engine implements RDF_Stream_Processor_Interface{
 
 	@Override
 	public Object registerQuery(String queryBody) throws Exception{
-		return engine.registerQuery(queryBody, false);
+		// TODO temporary fix to cope with new inference functionality
+//		return engine.registerQuery(queryBody, false);
+		return engine.registerQuery(queryBody, Config.getInstance().getActivateInference(), 
+				IoUtils.toString(getClass().getClassLoader().getResourceAsStream(Config.getInstance().getInferenceRulesFilePath())), 
+				ReasonerChainingType.FORWARD);
 	}
 
 	@Override

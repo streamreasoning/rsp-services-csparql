@@ -27,12 +27,10 @@ import java.util.Hashtable;
 
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.engine.header.Header;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Options;
 import org.restlet.resource.ServerResource;
-import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,16 +43,10 @@ public class SingleObserverDataServer extends ServerResource {
 
 	private Logger logger = LoggerFactory.getLogger(SingleObserverDataServer.class.getName());
 
-	@SuppressWarnings("unchecked")
 	@Options
 	public void optionsRequestHandler(){
 		String origin = getRequest().getClientInfo().getAddress();
-		Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-		if (responseHeaders == null) {
-			responseHeaders = new Series<Header>(Header.class);
-			getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-		}
-		responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+		getResponse().setAccessControlAllowOrigin(origin);
 	}
 
 	@SuppressWarnings({ "unchecked" })
@@ -72,12 +64,7 @@ public class SingleObserverDataServer extends ServerResource {
 			String observerId = observerURI.replace(queryURI + "/observers/", "");
 
 			String origin = getRequest().getClientInfo().getAddress();
-			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-			if (responseHeaders == null) {
-				responseHeaders = new Series<Header>(Header.class);
-				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-			}
-			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+			getResponse().setAccessControlAllowOrigin(origin);
 
 			try{
 				if(csparqlQueryTable.containsKey(queryName)){
@@ -129,12 +116,7 @@ public class SingleObserverDataServer extends ServerResource {
 			String observerId = observerURI.replace(queryURI + "/observers/", "");
 
 			String origin = getRequest().getClientInfo().getAddress();
-			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-			if (responseHeaders == null) {
-				responseHeaders = new Series<Header>(Header.class);
-				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-			}
-			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+			getResponse().setAccessControlAllowOrigin(origin);
 
 			if(csparqlQueryTable.containsKey(queryName)){
 				Csparql_Query csparqlQuery = csparqlQueryTable.get(queryName);

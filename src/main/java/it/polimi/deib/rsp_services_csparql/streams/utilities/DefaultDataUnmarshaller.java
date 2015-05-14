@@ -5,7 +5,7 @@ import java.io.ByteArrayInputStream;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
-public class RDFUnmarshaller implements InputDataUnmarshaller {
+public class DefaultDataUnmarshaller implements InputDataUnmarshaller {
 
 	@Override
 	public Model unmarshal(String inputData) throws Exception {

@@ -24,7 +24,6 @@ import it.polimi.deib.rsp_services_csparql.commons.Csparql_Engine;
 import it.polimi.deib.rsp_services_csparql.commons.Csparql_Query;
 import it.polimi.deib.rsp_services_csparql.commons.Csparql_RDF_Stream;
 import it.polimi.deib.rsp_services_csparql.configuration.Config;
-import it.polimi.deib.rsp_services_csparql.observers.utilities.Observer4HTTP;
 import it.polimi.deib.rsp_services_csparql.queries.utilities.CsparqlQueryDescriptionForGet;
 import it.polimi.deib.rsp_services_csparql.queries.utilities.Csparql_Observer_Descriptor;
 
@@ -34,9 +33,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 
+import org.restlet.data.Header;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.engine.header.Header;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
@@ -57,8 +56,6 @@ import eu.larkc.csparql.core.engine.CsparqlQueryResultProxy;
 import eu.larkc.csparql.core.engine.RDFStreamFormatter;
 
 public class SingleQueryDataServer extends ServerResource {
-	
-	private static Class<? extends Observer4HTTP> observer4HTTPImpl = null;
 
 	private static Hashtable<String, Csparql_Query> csparqlQueryTable;
 	private static Hashtable<String, Csparql_RDF_Stream> csparqlStreamTable;
@@ -67,16 +64,10 @@ public class SingleQueryDataServer extends ServerResource {
 
 	private Logger logger = LoggerFactory.getLogger(SingleQueryDataServer.class.getName());
 
-	@SuppressWarnings("unchecked")
 	@Options
 	public void optionsRequestHandler(){
 		String origin = getRequest().getClientInfo().getAddress();
-		Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-		if (responseHeaders == null) {
-			responseHeaders = new Series<Header>(Header.class);
-			getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-		}
-		responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+		getResponse().setAccessControlAllowOrigin(origin);
 	}
 
 	@SuppressWarnings({ "unchecked" })
@@ -95,12 +86,7 @@ public class SingleQueryDataServer extends ServerResource {
 			String hostName = Config.getInstance().getHostName();
 
 			String origin = getRequest().getClientInfo().getAddress();
-			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-			if (responseHeaders == null) {
-				responseHeaders = new Series<Header>(Header.class);
-				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-			}
-			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+			getResponse().setAccessControlAllowOrigin(origin);
 
 			String queryBody = rep.getText();
 
@@ -192,7 +178,7 @@ public class SingleQueryDataServer extends ServerResource {
 		} catch (Exception e) {
 			logger.error("Error while reading query body",e);
 			this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"Error while registering query body");
-			this.getResponse().setEntity(gson.toJson("Error while registering query body"), MediaType.APPLICATION_JSON);
+			this.getResponse().setEntity("Error while registering query body:\n" + e.getMessage(), MediaType.TEXT_PLAIN);
 		} finally{
 			this.getResponse().commit();
 			this.commit();	
@@ -216,12 +202,7 @@ public class SingleQueryDataServer extends ServerResource {
 			String queryName = queryURI.replace(hostName + "/queries/", "");
 
 			String origin = getRequest().getClientInfo().getAddress();
-			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-			if (responseHeaders == null) {
-				responseHeaders = new Series<Header>(Header.class);
-				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-			}
-			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+			getResponse().setAccessControlAllowOrigin(origin);
 
 			if(csparqlQueryTable.containsKey(queryName)){
 				Csparql_Query csparqlQuery = csparqlQueryTable.get(queryName);
@@ -273,64 +254,50 @@ public class SingleQueryDataServer extends ServerResource {
 			csparqlQueryTable = (Hashtable<String, Csparql_Query>) getContext().getAttributes().get("csaprqlQueryTable");
 			engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
 			String hostName = Config.getInstance().getHostName();
-			String serverAddress = (String) getContext().getAttributes().get("complete_server_address");
 
 
 			String origin = getRequest().getClientInfo().getAddress();
-			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-			if (responseHeaders == null) {
-				responseHeaders = new Series<Header>(Header.class);
-				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-			}
-			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+			getResponse().setAccessControlAllowOrigin(origin);
 
 
-			String callbackUrl = rep.getText();
-			String action = null;
-
-			if(callbackUrl.startsWith("action="))
-				action = callbackUrl.substring(callbackUrl.indexOf("=") + 1, callbackUrl.length());
+			String requestBody = rep.getText();
 
 			String queryURI = (String) this.getRequest().getAttributes().get("queryname");
 			String queryName = queryURI.replace(hostName + "queries/", "");
-
+	
 			if(csparqlQueryTable.containsKey(queryName)){
 				Csparql_Query csparqlQuery = csparqlQueryTable.get(queryName);
-				if(action == null){
-					//					String observerID = UUID.randomUUID().toString();
-					String observerID = String.valueOf(callbackUrl.hashCode());
-					String observerURI = serverAddress + "/queries/" + queryName + "/observers/" + observerID;
-					Csparql_Observer_Descriptor csObs = new Csparql_Observer_Descriptor(observerID, getNewObserver4HTTP(callbackUrl));
-					csparqlQuery.addObserver(csObs);
-					this.getResponse().setStatus(Status.SUCCESS_OK,"Observer succesfully registered");
-					this.getResponse().setEntity(gson.toJson(observerURI), MediaType.APPLICATION_JSON);	
-				} else {
-					if(action.equals("pause")){
-						if(!csparqlQuery.getQueryStatus().equals(Rsp_services_Component_Status.PAUSED)){
-							engine.stopQuery(csparqlQuery.getQueryID());
-							csparqlQuery.changeQueryStatus(Rsp_services_Component_Status.PAUSED);
-							csparqlQueryTable.put(queryName, csparqlQuery);
-							this.getResponse().setStatus(Status.SUCCESS_OK,queryURI + " succesfully paused");
-							this.getResponse().setEntity(gson.toJson(queryURI + " succesfully paused"), MediaType.APPLICATION_JSON);
-						} else {
-							this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,queryURI + " is already paused");
-							this.getResponse().setEntity(gson.toJson(queryURI + " is already paused"), MediaType.APPLICATION_JSON);
-						}
-					} else if(action.equals("restart")){
-						if(!csparqlQuery.getQueryStatus().equals(Rsp_services_Component_Status.RUNNING)){
-							engine.startQuery(csparqlQuery.getQueryID());
-							csparqlQuery.changeQueryStatus(Rsp_services_Component_Status.RUNNING);
-							csparqlQueryTable.put(queryName, csparqlQuery);
-							this.getResponse().setStatus(Status.SUCCESS_OK,queryURI + " succesfully restarted");
-							this.getResponse().setEntity(gson.toJson(queryURI + " succesfully restarted"), MediaType.APPLICATION_JSON);
-						} else {
-							this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,queryURI + " is already running");
-							this.getResponse().setEntity(gson.toJson(queryURI + " is already running"), MediaType.APPLICATION_JSON);
-						}
+				String action = null;
+				if(requestBody.startsWith("action=")) 
+					action = requestBody.substring(requestBody.indexOf("=") + 1, requestBody.length());
+				if (action == null) {
+					this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"No action was specified. The action must be pause or restart");
+					this.getResponse().setEntity(gson.toJson("No action was specified. The action must be pause or restart"), MediaType.APPLICATION_JSON);
+				} else if (action.equals("pause")){
+					if(!csparqlQuery.getQueryStatus().equals(Rsp_services_Component_Status.PAUSED)){
+						engine.stopQuery(csparqlQuery.getQueryID());
+						csparqlQuery.changeQueryStatus(Rsp_services_Component_Status.PAUSED);
+						csparqlQueryTable.put(queryName, csparqlQuery);
+						this.getResponse().setStatus(Status.SUCCESS_OK,queryURI + " succesfully paused");
+						this.getResponse().setEntity(gson.toJson(queryURI + " succesfully paused"), MediaType.APPLICATION_JSON);
 					} else {
-						this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"Problem with specified action. The action must be pause or restart");
-						this.getResponse().setEntity(gson.toJson("Problem with specified action. The action must be pause or restart"), MediaType.APPLICATION_JSON);
+						this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,queryURI + " is already paused");
+						this.getResponse().setEntity(gson.toJson(queryURI + " is already paused"), MediaType.APPLICATION_JSON);
 					}
+				} else if(action.equals("restart")){
+					if(!csparqlQuery.getQueryStatus().equals(Rsp_services_Component_Status.RUNNING)){
+						engine.startQuery(csparqlQuery.getQueryID());
+						csparqlQuery.changeQueryStatus(Rsp_services_Component_Status.RUNNING);
+						csparqlQueryTable.put(queryName, csparqlQuery);
+						this.getResponse().setStatus(Status.SUCCESS_OK,queryURI + " succesfully restarted");
+						this.getResponse().setEntity(gson.toJson(queryURI + " succesfully restarted"), MediaType.APPLICATION_JSON);
+					} else {
+						this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,queryURI + " is already running");
+						this.getResponse().setEntity(gson.toJson(queryURI + " is already running"), MediaType.APPLICATION_JSON);
+					}
+				} else {
+					this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"Problem with specified action. The action must be pause or restart");
+					this.getResponse().setEntity(gson.toJson("Problem with specified action. The action must be pause or restart"), MediaType.APPLICATION_JSON);
 				}
 				getContext().getAttributes().put("csaprqlQueryTable", csparqlQueryTable);
 				getContext().getAttributes().put("csparqlengine", engine);
@@ -347,32 +314,6 @@ public class SingleQueryDataServer extends ServerResource {
 			this.commit();	
 			this.release();
 		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private Observer4HTTP getNewObserver4HTTP(String callBackUrl) {
-		if (observer4HTTPImpl == null) {
-			observer4HTTPImpl = Observer4HTTP.DEFAULT_OBSERVER4HTTP_IMPL;
-			String className = System.getProperty(Observer4HTTP.OBSERVER4HTTP_IMPL_PROPERTY_NAME);
-			if (className!=null) {
-				try {
-					observer4HTTPImpl = (Class<? extends Observer4HTTP>) getClass()
-							.getClassLoader().loadClass(className);
-				}
-				catch (Exception e) {
-					logger.error("Provided Observer4HTTP implementation {} raised an exception "
-							+ "while trying to load the class, the default one will be used", className, e);
-				}
-			}
-			logger.debug("Using {} as Observer4HTTP implementation", observer4HTTPImpl);
-		}
-		Observer4HTTP observerInstance;
-		try {
-			observerInstance = observer4HTTPImpl.getDeclaredConstructor(String.class).newInstance(callBackUrl);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		return observerInstance;
 	}
 
 	//	@SuppressWarnings("unchecked")
@@ -428,12 +369,7 @@ public class SingleQueryDataServer extends ServerResource {
 			String queryName = queryURI.replace(hostName + "queries/", "");
 
 			String origin = getRequest().getClientInfo().getAddress();
-			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-			if (responseHeaders == null) {
-				responseHeaders = new Series<Header>(Header.class);
-				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-			}
-			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+			getResponse().setAccessControlAllowOrigin(origin);
 
 			if(csparqlQueryTable.containsKey(queryName)){
 				Csparql_Query csparqlQuery = csparqlQueryTable.get(queryName);

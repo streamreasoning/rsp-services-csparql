@@ -29,11 +29,9 @@ import java.util.Set;
 
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.engine.header.Header;
 import org.restlet.resource.Get;
 import org.restlet.resource.Options;
 import org.restlet.resource.ServerResource;
-import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,16 +44,10 @@ public class MultipleQueriesDataServer extends ServerResource {
 
 	private Logger logger = LoggerFactory.getLogger(MultipleQueriesDataServer.class.getName());
 
-	@SuppressWarnings("unchecked")
 	@Options
 	public void optionsRequestHandler(){
 		String origin = getRequest().getClientInfo().getAddress();
-		Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-		if (responseHeaders == null) {
-			responseHeaders = new Series<Header>(Header.class);
-			getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-		}
-		responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+		getResponse().setAccessControlAllowOrigin(origin);
 	}
 
 	@SuppressWarnings({ "unchecked" })
@@ -64,12 +56,7 @@ public class MultipleQueriesDataServer extends ServerResource {
 
 		try{
 			String origin = getRequest().getClientInfo().getAddress();
-			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-			if (responseHeaders == null) {
-				responseHeaders = new Series<Header>(Header.class);
-				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-			}
-			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+			getResponse().setAccessControlAllowOrigin(origin);
 
 			csparqlQueryTable = (Hashtable<String, Csparql_Query>) getContext().getAttributes().get("csaprqlQueryTable");
 			ArrayList<CsparqlQueryDescriptionForGet> queryDescriptionList = new ArrayList<CsparqlQueryDescriptionForGet>();

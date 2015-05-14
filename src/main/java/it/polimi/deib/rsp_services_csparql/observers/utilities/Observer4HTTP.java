@@ -27,12 +27,15 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Observable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
@@ -44,23 +47,22 @@ import eu.larkc.csparql.common.RDFTable;
 
 public class Observer4HTTP implements Continuous_Query_Observer_Interface{
 	
-	public static final String OBSERVER4HTTP_IMPL_PROPERTY_NAME = "it.polimi.deib.rsp_services_csparql.observers.Observer4HTTPImpl";
-	public static final Class<Observer4HTTP> DEFAULT_OBSERVER4HTTP_IMPL = Observer4HTTP.class;
-
-	protected String clientAddress;
-
-	private HttpClient client = null;
-	private HttpPost method = null;
+	private final ExecutorService executor;
+	
+	protected final String clientAddress;
+	protected final String format;
+	
+	private HttpClient client;
 	private URI uri;
-	private HttpResponse httpResponse;
-	private HttpEntity httpEntity;
 	private boolean sendEmptyResults;
 
-	private Logger logger = LoggerFactory.getLogger(Observer4HTTP.class.getName());	
+	private Logger logger = LoggerFactory.getLogger(Observer4HTTP.class.getName());
+	private OutputDataMarshaller outputDataMarshaller;	
 
-	public Observer4HTTP(String clientAddress) {
+	public Observer4HTTP(String callbackUrl, String outputFormat) {
 		super();
-		this.clientAddress = clientAddress;
+		this.clientAddress = callbackUrl;
+		this.format = outputFormat;
 		try {
 			this.sendEmptyResults = Config.getInstance().getSendEmptyResultsProperty();
 		} catch (Exception e) {
@@ -72,13 +74,12 @@ public class Observer4HTTP implements Continuous_Query_Observer_Interface{
 
 			client = new DefaultHttpClient();
 			uri = new URI(this.clientAddress);
-			method = new HttpPost(uri);
-			method.setHeader("Cache-Control","no-cache");
 
 		} catch (URISyntaxException e) {
 			logger.error("error while creating URI", e);
 		}
 
+		executor = Executors.newCachedThreadPool();
 	}
 
 //	public void update(final GenericObservable<RDFTable> observed, final RDFTable q) {
@@ -127,44 +128,81 @@ public class Observer4HTTP implements Continuous_Query_Observer_Interface{
 
 		RDFTable q = (RDFTable) arg;	
 
+		HttpPost method = null;
 		try {
 
-			String jsonSerialization = q.getJsonSerialization();
-			if (!sendEmptyResults) {
-				
-				if (!isEmptyResult(jsonSerialization)) {
-					
-					method.setEntity(new StringEntity(jsonSerialization));
+			if (sendEmptyResults || !q.isEmpty()) {
+				String serialization = getOutputDataMarshaller().marshal(q, format);
+				logger.debug("Sending {} bytes to {}", serialization.length(), clientAddress);
+				method  = new HttpPost(uri);
+				method.setHeader("Cache-Control","no-cache");
+				method.setEntity(new StringEntity(serialization));
 
-					httpResponse = client.execute(method);
-					httpEntity = httpResponse.getEntity();
-
-					EntityUtils.consume(httpEntity);
-				}
-			} else {
-								
-				method.setEntity(new StringEntity(jsonSerialization));
-
-				httpResponse = client.execute(method);
-				httpEntity = httpResponse.getEntity();
-
-				EntityUtils.consume(httpEntity);
+				executor.execute(new AsyncRequest(client, method));
 			}
 
-		} catch(org.apache.http.conn.HttpHostConnectException e){
-			logger.error("Connection to {} refused", clientAddress);
 		} catch (UnsupportedEncodingException e) {
 			logger.error("error while encoding", e);
-		} catch (ClientProtocolException e) {
-			logger.error("error while calling rest service", e);
-		} catch (IOException e) {
-			logger.error("error during IO operation", e);
 		} finally {
-			method.releaseConnection();
+			if (method != null)
+				method.releaseConnection();
 		}		
 	}
 	
-	private boolean isEmptyResult(String json) {
-		return json.matches("\\{\\s*\\}") || json.matches("[\\s\\S]*\"bindings\"\\s*:\\s*\\[\\s*\\][\\s\\S]*");
+	private OutputDataMarshaller getOutputDataMarshaller() {
+		if (outputDataMarshaller  == null) {
+			try {
+				outputDataMarshaller = OutputDataMarshaller.DEFAULT_OUTPUT_DATA_MARSHALLER_IMPL.newInstance();
+			} catch (Exception e) { // this should not happen
+				throw new RuntimeException(e);
+			}
+			String className = System.getProperty(OutputDataMarshaller.OUTPUT_DATA_MARSHALLER_IMPL_PROPERTY_NAME);
+			if (className != null){
+				try {
+					outputDataMarshaller = (OutputDataMarshaller) getClass()
+							.getClassLoader().loadClass(className).newInstance();
+				}
+				catch (Exception e) {
+					logger.error("Provided OutputDataMarshaller implementation {} raised an exception "
+							+ "while trying to load the class, the default one will be used", className, e);
+				}
+			}
+			logger.debug("Using {} as OutputDataMarshaller implementation", outputDataMarshaller.getClass().getName());
+		}
+		return outputDataMarshaller;
 	}
+	
+	public class AsyncRequest implements Runnable {
+
+		private HttpClient client;
+		private HttpPost method;
+
+		public AsyncRequest(HttpClient client, HttpPost method) {
+			this.client = client;
+			this.method = method;
+		}
+
+		@Override
+		public void run() {
+			try {
+				HttpResponse httpResponse = client.execute(method);
+				HttpEntity httpEntity = httpResponse.getEntity();
+
+				EntityUtils.consume(httpEntity);
+
+			} catch (HttpHostConnectException e) {
+				logger.error("Connection to {} refused", clientAddress);
+			} catch (UnsupportedEncodingException e) {
+				logger.error("error while encoding", e);
+			} catch (ClientProtocolException e) {
+				logger.error("error while calling rest service", e);
+			} catch (IOException e) {
+				logger.error("error during IO operation", e);
+			} finally {
+				method.releaseConnection();
+			}
+		}
+
+	}
+	
 }

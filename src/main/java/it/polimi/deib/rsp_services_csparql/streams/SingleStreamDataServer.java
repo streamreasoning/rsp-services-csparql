@@ -27,12 +27,14 @@ import it.polimi.deib.rsp_services_csparql.streams.utilities.CsparqlStreamDescri
 import it.polimi.deib.rsp_services_csparql.streams.utilities.InputDataUnmarshaller;
 
 import java.net.URLDecoder;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Set;
 
 import org.restlet.data.ClientInfo;
 import org.restlet.data.MediaType;
+import org.restlet.data.Method;
 import org.restlet.data.Status;
-import org.restlet.engine.header.Header;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
@@ -40,7 +42,6 @@ import org.restlet.resource.Options;
 import org.restlet.resource.Post;
 import org.restlet.resource.Put;
 import org.restlet.resource.ServerResource;
-import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.streamreasoning.rsp_services.commons.Rsp_services_Component_Status;
@@ -63,18 +64,17 @@ public class SingleStreamDataServer extends ServerResource {
 	private Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 	private Logger logger = LoggerFactory.getLogger(SingleStreamDataServer.class.getName());
 
-	@SuppressWarnings("unchecked")
 	@Options
 	public void optionsRequestHandler(){
 		ClientInfo c = getRequest().getClientInfo();
 		String origin = c.getAddress();
-		Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-		if (responseHeaders == null) {
-			responseHeaders = new Series<Header>(Header.class);
-			getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-		}
-		responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
-		responseHeaders.add(new Header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE"));
+		getResponse().setAccessControlAllowOrigin(origin);
+		Set<Method> accessControlAllowMethods = new HashSet<Method>();
+		accessControlAllowMethods.add(Method.GET);
+		accessControlAllowMethods.add(Method.PUT);
+		accessControlAllowMethods.add(Method.POST);
+		accessControlAllowMethods.add(Method.DELETE);
+		getResponse().setAccessControlAllowMethods(accessControlAllowMethods );
 
 	}
 
@@ -85,12 +85,7 @@ public class SingleStreamDataServer extends ServerResource {
 		try{
 
 			String origin = getRequest().getClientInfo().getAddress();
-			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-			if (responseHeaders == null) {
-				responseHeaders = new Series<Header>(Header.class);
-				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-			}
-			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+			getResponse().setAccessControlAllowOrigin(origin);
 			
 			csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
 			engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
@@ -128,12 +123,7 @@ public class SingleStreamDataServer extends ServerResource {
 		try{
 
 			String origin = getRequest().getClientInfo().getAddress();
-			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-			if (responseHeaders == null) {
-				responseHeaders = new Series<Header>(Header.class);
-				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-			}
-			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+			getResponse().setAccessControlAllowOrigin(origin);
 			
 			csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
 			engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
@@ -171,12 +161,7 @@ public class SingleStreamDataServer extends ServerResource {
 		try{
 
 			String origin = getRequest().getClientInfo().getAddress();
-			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-			if (responseHeaders == null) {
-				responseHeaders = new Series<Header>(Header.class);
-				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-			}
-			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+			getResponse().setAccessControlAllowOrigin(origin);
 			
 			csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
 			engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
@@ -186,8 +171,8 @@ public class SingleStreamDataServer extends ServerResource {
 			if(csparqlStreamTable.containsKey(inputStreamName)){
 				Csparql_RDF_Stream streamRepresentation = csparqlStreamTable.get(inputStreamName);
 
-				Model model = getInputDataUnmarshaller().unmarshal(rep.getText());					
-				
+				Model model = getInputDataUnmarshaller().unmarshal(rep.getText());
+				logger.debug("Feeding {} statements", model.size());
 				long ts = System.currentTimeMillis();
 
 				StmtIterator it = model.listStatements();
@@ -310,12 +295,7 @@ public class SingleStreamDataServer extends ServerResource {
 		try{
 
 			String origin = getRequest().getClientInfo().getAddress();
-			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-			if (responseHeaders == null) {
-				responseHeaders = new Series<Header>(Header.class);
-				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-			}
-			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+			getResponse().setAccessControlAllowOrigin(origin);
 			
 			csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
 

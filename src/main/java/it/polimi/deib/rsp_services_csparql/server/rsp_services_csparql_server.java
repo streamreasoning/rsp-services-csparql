@@ -39,7 +39,9 @@ import java.util.Hashtable;
 import org.apache.log4j.PropertyConfigurator;
 import org.restlet.Application;
 import org.restlet.Component;
+import org.restlet.Context;
 import org.restlet.Restlet;
+import org.restlet.Server;
 import org.restlet.data.Protocol;
 import org.restlet.resource.Directory;
 import org.restlet.routing.Router;
@@ -105,8 +107,14 @@ public class rsp_services_csparql_server extends Application{
 		}
 
 		component = new Component();
-		component.getServers().add(Protocol.HTTP, Config.getInstance().getServerPort());
-		component.getClients().add(Protocol.FILE);  
+		Server server = new Server(Protocol.HTTP,
+				Config.getInstance().getServerPort());
+		Context context = new Context();
+		context.getParameters().add("maxThreads", "500");
+		context.getParameters().add("maxTotalConnections", "500");
+		server.setContext(context);
+		component.getServers().add(server);
+		component.getClients().add(Protocol.FILE);
 
 		rsp_services_csparql_server csparqlServer = new rsp_services_csparql_server();
 		component.getDefaultHost().attach("", csparqlServer);
