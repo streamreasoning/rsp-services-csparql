@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This document adheres to [keep-a-changelog].
 
-## [0.4.8-modaclouds]
+## [0.4.8-modaclouds] - 2015-05-14
 
 ### Added
 - the possibility to use a custom unmarshaller for input data (e.g.: to reduce network traffic)
