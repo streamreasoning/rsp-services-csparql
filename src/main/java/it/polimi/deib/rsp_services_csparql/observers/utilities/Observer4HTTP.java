@@ -45,28 +45,32 @@ import org.streamreasoning.rsp_services.interfaces.Continuous_Query_Observer_Int
 
 import eu.larkc.csparql.common.RDFTable;
 
-public class Observer4HTTP implements Continuous_Query_Observer_Interface{
-	
+public class Observer4HTTP implements Continuous_Query_Observer_Interface {
+
 	private final ExecutorService executor;
-	
+
 	protected final String clientAddress;
 	protected final String format;
-	
+
 	private HttpClient client;
 	private URI uri;
 	private boolean sendEmptyResults;
 
-	private Logger logger = LoggerFactory.getLogger(Observer4HTTP.class.getName());
-	private OutputDataMarshaller outputDataMarshaller;	
+	private Logger logger = LoggerFactory.getLogger(Observer4HTTP.class
+			.getName());
+	private OutputDataMarshaller outputDataMarshaller;
 
 	public Observer4HTTP(String callbackUrl, String outputFormat) {
 		super();
 		this.clientAddress = callbackUrl;
 		this.format = outputFormat;
 		try {
-			this.sendEmptyResults = Config.getInstance().getSendEmptyResultsProperty();
+			this.sendEmptyResults = Config.getInstance()
+					.getSendEmptyResultsProperty();
 		} catch (Exception e) {
-			logger.error("Error while loading sendEmptyResults property from configuration", e);
+			logger.error(
+					"Error while loading sendEmptyResults property from configuration",
+					e);
 			this.sendEmptyResults = true;
 		}
 
@@ -82,63 +86,70 @@ public class Observer4HTTP implements Continuous_Query_Observer_Interface{
 		executor = Executors.newCachedThreadPool();
 	}
 
-//	public void update(final GenericObservable<RDFTable> observed, final RDFTable q) {
-//
-//		try {
-//
-//			if(sendEmptyResults){
-//				if(!q.getJsonSerialization().isEmpty()){
-//					method.setEntity(new StringEntity(q.getJsonSerialization()));
-//
-//					httpResponse = client.execute(method);
-//					httpEntity = httpResponse.getEntity();
-//
-//					httpParams = client.getParams();
-//					HttpConnectionParams.setConnectionTimeout(httpParams, 30000);
-//
-//					EntityUtils.consume(httpEntity);
-//				}
-//			} else {
-//				method.setEntity(new StringEntity(q.getJsonSerialization()));
-//
-//				httpResponse = client.execute(method);
-//				httpEntity = httpResponse.getEntity();
-//
-//				httpParams = client.getParams();
-//				HttpConnectionParams.setConnectionTimeout(httpParams, 30000);
-//
-//				EntityUtils.consume(httpEntity);
-//			}
-//
-//		} catch(org.apache.http.conn.HttpHostConnectException e){
-//			logger.error("Connection to {} refused", clientAddress);
-//		} catch (UnsupportedEncodingException e) {
-//			logger.error("error while encoding", e);
-//		} catch (ClientProtocolException e) {
-//			logger.error("error while calling rest service", e);
-//		} catch (IOException e) {
-//			logger.error("error during IO operation", e);
-//		} finally {
-//			method.releaseConnection();
-//		}
-//	}
+	// public void update(final GenericObservable<RDFTable> observed, final
+	// RDFTable q) {
+	//
+	// try {
+	//
+	// if(sendEmptyResults){
+	// if(!q.getJsonSerialization().isEmpty()){
+	// method.setEntity(new StringEntity(q.getJsonSerialization()));
+	//
+	// httpResponse = client.execute(method);
+	// httpEntity = httpResponse.getEntity();
+	//
+	// httpParams = client.getParams();
+	// HttpConnectionParams.setConnectionTimeout(httpParams, 30000);
+	//
+	// EntityUtils.consume(httpEntity);
+	// }
+	// } else {
+	// method.setEntity(new StringEntity(q.getJsonSerialization()));
+	//
+	// httpResponse = client.execute(method);
+	// httpEntity = httpResponse.getEntity();
+	//
+	// httpParams = client.getParams();
+	// HttpConnectionParams.setConnectionTimeout(httpParams, 30000);
+	//
+	// EntityUtils.consume(httpEntity);
+	// }
+	//
+	// } catch(org.apache.http.conn.HttpHostConnectException e){
+	// logger.error("Connection to {} refused", clientAddress);
+	// } catch (UnsupportedEncodingException e) {
+	// logger.error("error while encoding", e);
+	// } catch (ClientProtocolException e) {
+	// logger.error("error while calling rest service", e);
+	// } catch (IOException e) {
+	// logger.error("error during IO operation", e);
+	// } finally {
+	// method.releaseConnection();
+	// }
+	// }
 
 	@Override
 	public void update(Observable o, Object arg) {
 
-		RDFTable q = (RDFTable) arg;	
+		RDFTable q = (RDFTable) arg;
 
 		HttpPost method = null;
 		try {
 
 			if (sendEmptyResults || !q.isEmpty()) {
-				String serialization = getOutputDataMarshaller().marshal(q, format);
-				logger.debug("Sending {} bytes to {}", serialization.length(), clientAddress);
-				method  = new HttpPost(uri);
-				method.setHeader("Cache-Control","no-cache");
-				method.setEntity(new StringEntity(serialization));
+				String serialization = getOutputDataMarshaller().marshal(q,
+						format);
+				if (serialization != null) {
+					logger.debug("Sending {} bytes to {}",
+							serialization.length(), clientAddress);
+					method = new HttpPost(uri);
+					method.setHeader("Cache-Control", "no-cache");
+					method.setEntity(new StringEntity(serialization));
 
-				executor.execute(new AsyncRequest(client, method));
+					executor.execute(new AsyncRequest(client, method));
+				} else {
+					logger.error("Serialization returned null, data won't be sent");
+				}
 			}
 
 		} catch (UnsupportedEncodingException e) {
@@ -146,32 +157,37 @@ public class Observer4HTTP implements Continuous_Query_Observer_Interface{
 		} finally {
 			if (method != null)
 				method.releaseConnection();
-		}		
+		}
 	}
-	
+
 	private OutputDataMarshaller getOutputDataMarshaller() {
-		if (outputDataMarshaller  == null) {
+		if (outputDataMarshaller == null) {
 			try {
-				outputDataMarshaller = OutputDataMarshaller.DEFAULT_OUTPUT_DATA_MARSHALLER_IMPL.newInstance();
+				outputDataMarshaller = OutputDataMarshaller.DEFAULT_OUTPUT_DATA_MARSHALLER_IMPL
+						.newInstance();
 			} catch (Exception e) { // this should not happen
 				throw new RuntimeException(e);
 			}
-			String className = System.getProperty(OutputDataMarshaller.OUTPUT_DATA_MARSHALLER_IMPL_PROPERTY_NAME);
-			if (className != null){
+			String className = System
+					.getProperty(OutputDataMarshaller.OUTPUT_DATA_MARSHALLER_IMPL_PROPERTY_NAME);
+			if (className != null) {
 				try {
 					outputDataMarshaller = (OutputDataMarshaller) getClass()
-							.getClassLoader().loadClass(className).newInstance();
-				}
-				catch (Exception e) {
-					logger.error("Provided OutputDataMarshaller implementation {} raised an exception "
-							+ "while trying to load the class, the default one will be used", className, e);
+							.getClassLoader().loadClass(className)
+							.newInstance();
+				} catch (Exception e) {
+					logger.error(
+							"Provided OutputDataMarshaller implementation {} raised an exception "
+									+ "while trying to load the class, the default one will be used",
+							className, e);
 				}
 			}
-			logger.debug("Using {} as OutputDataMarshaller implementation", outputDataMarshaller.getClass().getName());
+			logger.debug("Using {} as OutputDataMarshaller implementation",
+					outputDataMarshaller.getClass().getName());
 		}
 		return outputDataMarshaller;
 	}
-	
+
 	public class AsyncRequest implements Runnable {
 
 		private HttpClient client;
@@ -204,5 +220,5 @@ public class Observer4HTTP implements Continuous_Query_Observer_Interface{
 		}
 
 	}
-	
+
 }
