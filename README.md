@@ -17,3 +17,9 @@ You can find well documented hands on example at https://www.dropbox.com/s/ghb6e
 
 An example of java client for rsp-service-csparql at https://github.com/streamreasoning/rsp-services-client-example. The client project uses a custom API, you can found the code at https://github.com/streamreasoning/rsp-services-api.
 
+
+## Run with Docker
+
+Run `mvn clean package docker:build` to build the docker image. 
+The [Spotify Docker Maven Plugin](https://github.com/spotify/docker-maven-plugin) is used.
+Finally run it via `docker run -p 8175:8175 -d streamreasoning/rsp-services-csparql`.
