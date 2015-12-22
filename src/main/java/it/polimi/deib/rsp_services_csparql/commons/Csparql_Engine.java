@@ -21,6 +21,7 @@
 package it.polimi.deib.rsp_services_csparql.commons;
 
 
+import eu.larkc.csparql.common.RDFTable;
 import it.polimi.deib.rsp_services_csparql.configuration.Config;
 
 import org.slf4j.Logger;
@@ -155,6 +156,10 @@ public class Csparql_Engine implements RDF_Stream_Processor_Interface{
 
 	public void queryStaticKnowledge(String queryBody){
 		engine.execUpdateQueryOverDatasource(queryBody);
+	}
+
+	public RDFTable evaluateQueryOverDatasource(String queryBody) {
+		return engine.evaluateGeneralQueryOverDatasource(queryBody);
 	}
 
 }

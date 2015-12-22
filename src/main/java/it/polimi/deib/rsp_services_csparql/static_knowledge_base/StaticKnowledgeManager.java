@@ -20,12 +20,14 @@
  ******************************************************************************/
 package it.polimi.deib.rsp_services_csparql.static_knowledge_base;
 
+import eu.larkc.csparql.common.RDFTable;
 import it.polimi.deib.rsp_services_csparql.commons.Csparql_Engine;
 
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
+import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
@@ -87,6 +89,33 @@ public class StaticKnowledgeManager extends ServerResource {
 		}
 
 	}
+
+	@Get
+	public void evaluateQuery(){
+		try {
+
+			Csparql_Engine engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
+
+			String queryBody = getQueryValue("query");
+
+			RDFTable result = engine.evaluateQueryOverDatasource(queryBody);
+			String jsonSerialization = result.getJsonSerialization();
+
+			this.getResponse().setStatus(Status.SUCCESS_OK,"Query evaluated.");
+			this.getResponse().setEntity((jsonSerialization), MediaType.APPLICATION_JSON);
+
+		} catch (Exception e) {
+			logger.error("Problem while accessing internal static knowledge base: {}", e.getMessage());
+			this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"Problem during query Operation");
+			this.getResponse().setEntity(new Gson().toJson("Problem during query Operation"), MediaType.APPLICATION_JSON);
+		} finally {
+			this.getResponse().commit();
+			this.commit();
+			this.release();
+		}
+
+	}
+
 
 
 }
