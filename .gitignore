@@ -10,3 +10,7 @@
 .project
 .classpath
 .DS_Store
+
+# IntelliJ
+.idea
+*.iml
