@@ -24,12 +24,15 @@ package it.polimi.deib.rsp_services_csparql.commons;
 import eu.larkc.csparql.common.RDFTable;
 import it.polimi.deib.rsp_services_csparql.configuration.Config;
 
+import com.hp.hpl.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.streamreasoning.rsp_services.interfaces.RDF_Stream_Processor_Interface;
 
 import eu.larkc.csparql.cep.api.RdfStream;
 import eu.larkc.csparql.core.engine.CsparqlEngineImpl;
+
+import java.io.StringWriter;
 
 public class Csparql_Engine implements RDF_Stream_Processor_Interface{
 
@@ -91,6 +94,10 @@ public class Csparql_Engine implements RDF_Stream_Processor_Interface{
 	public Object registerQuery(String queryBody) throws Exception{
 		return engine.registerQuery(queryBody, false);
 	}
+
+    public Object registerQuery(String queryBody, Model tbox) throws Exception{
+        return engine.registerQuery(queryBody, true, stringMakerFromModel(tbox));
+    }
 
 	@Override
 	public Object unregisterQuery(String queryID) {
@@ -161,5 +168,21 @@ public class Csparql_Engine implements RDF_Stream_Processor_Interface{
 	public RDFTable evaluateQueryOverDatasource(String queryBody) {
 		return engine.evaluateGeneralQueryOverDatasource(queryBody);
 	}
+
+    public String stringMakerFromModel(Model model){
+        try{
+            if(model != null){
+                StringWriter sWriter = new StringWriter();
+                model.write(sWriter);
+                return sWriter.toString();
+            } else {
+                return new String();
+            }
+        } catch(Exception e){
+            logger.error("Exception occurred during Model to String trasformation", e);
+            return new String();
+        }
+    }
+
 
 }

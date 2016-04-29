@@ -115,6 +115,8 @@ public class rsp_services_csparql_server extends Application{
 
 		component.start();
 
+        System.out.println("Server Starte on port " + Config.getInstance().getServerPort());
+
 	}
 
 	public Restlet createInboundRoot(){
@@ -134,8 +136,8 @@ public class rsp_services_csparql_server extends Application{
 		router.setDefaultMatchingMode(Template.MODE_EQUALS);
 
 		router.attach("/demo", resources.createInboundRoot());
-		router.attach("/streams", MultipleStreamsDataServer.class);
-		router.attach("/streams/{streamname}", SingleStreamDataServer.class);
+		router.attach("/streams", SingleStreamDataServer.class);
+//		router.attach("/streams/{streamname}", SingleStreamDataServer.class);
 		router.attach("/queries", MultipleQueriesDataServer.class);
 		router.attach("/queries/{queryname}", SingleQueryDataServer.class);
 		router.attach("/queries/{queryname}/observers", MultipleObserversDataServer.class);

@@ -20,27 +20,36 @@
  ******************************************************************************/
 package it.polimi.deib.rsp_services_csparql.commons;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 import org.streamreasoning.rsp_services.commons.Rsp_services_Component_Status;
 import org.streamreasoning.rsp_services.interfaces.RDF_Stream_Interface;
 
 import eu.larkc.csparql.cep.api.RdfQuadruple;
 import eu.larkc.csparql.cep.api.RdfStream;
 
+import javax.websocket.Session;
+
 public class Csparql_RDF_Stream implements RDF_Stream_Interface{
 
 	private RdfStream stream;
 	private Rsp_services_Component_Status status;
+    private Model tBox;
+    private Model staticAbox;
+    private String sourceURI;
+    private Session wsSession;
 	
 	public Csparql_RDF_Stream() {
 		super();
 	}
-	public Csparql_RDF_Stream(RdfStream stream, Rsp_services_Component_Status status) {
-		super();
-		this.stream = stream;
-		this.status = status;
-	}
-	
-	public RdfStream getStream() {
+
+    public Csparql_RDF_Stream(RdfStream stream, Rsp_services_Component_Status status) {
+        this.stream = stream;
+        this.status = status;
+    }
+
+    public RdfStream getStream() {
 		return stream;
 	}
 	
@@ -55,11 +64,55 @@ public class Csparql_RDF_Stream implements RDF_Stream_Interface{
 	public void setStatus(Rsp_services_Component_Status status) {
 		this.status = status;
 	}
-	
-	@Override
+
+    public Model gettBox() {
+        return tBox;
+    }
+
+    public void settBox(Model tBox) {
+        this.tBox = tBox;
+    }
+
+    public Model getStaticAbox() {
+        return staticAbox;
+    }
+
+    public void setStaticAbox(Model staticAbox) {
+        this.staticAbox = staticAbox;
+    }
+
+    public String getSourceURI() {
+        return sourceURI;
+    }
+
+    public void setSourceURI(String sourceURI) {
+        this.sourceURI = sourceURI;
+    }
+
+    public Session getWsSession() {
+        return wsSession;
+    }
+
+    public void setWsSession(Session wsSession) {
+        this.wsSession = wsSession;
+    }
+
+    @Override
 	public void feed_RDF_stream(Object dataSerialization) {
 		RdfQuadruple quadruple = (RdfQuadruple) dataSerialization;
 		stream.put(quadruple);
 	}
+
+    public void feed_RDF_stream(Model model) {
+
+        RdfQuadruple quadruple;
+        long ts = System.currentTimeMillis();
+
+        StmtIterator it = model.listStatements();
+        while(it.hasNext()){
+            Statement st = it.next();
+            stream.put(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
+        }
+    }
 	
 }
