@@ -20,11 +20,11 @@
  ******************************************************************************/
 package it.polimi.deib.rsp_services_csparql.configuration;
 
+import java.io.File;
 import java.util.Iterator;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,19 +32,20 @@ import org.slf4j.LoggerFactory;
 public class Config {
 	private static Config _instance = null;
 	private static final Logger logger = LoggerFactory.getLogger(Config.class); 
-	
-	private static Configuration config;
+
+    private static Configurations configs = new Configurations();
+	private static PropertiesConfiguration config;
 	
 	private Config(String propertiesFilePath){
 		try {
-			config = new PropertiesConfiguration(propertiesFilePath);
+			config = configs.properties(new File(propertiesFilePath));
 			for (Iterator<String> iterator = config.getKeys(); iterator.hasNext();) {
 				String property = iterator.next();
 				String sysValue = System.getProperty(property);
 				if (sysValue!=null)
 					config.setProperty(property, sysValue);
 			}
-		} catch (ConfigurationException e) {
+		} catch (Exception e) {
 			logger.error("Error while reading the configuration file", e);
 		}
 	}
@@ -58,23 +59,7 @@ public class Config {
 			throw new Exception("Please initialize the configuration object at server startup");
 		return _instance;
 	}
-	
-	public String getInferenceRulesFilePath(){
-		return config.getString("csparql_engine.inference_rule_file");
-	}
-	
-	public String getInferenceEntailmentRegime(){
-		return config.getString("csparql_engine.inference_entailment_regime");
-	}
-	
-	public boolean getActivateInference(){
-		return config.getBoolean("csparql_engine.activate_inference");
-	}
-	
-	public String getServerVersion(){
-		return config.getString("csparql_server.version");
-	}
-	
+
 	public int getServerPort(){
 		return config.getInt("csparql_server.port");
 	}
@@ -92,9 +77,5 @@ public class Config {
 	
 	public boolean getSendEmptyResultsProperty(){
 		return config.getBoolean("csparql_engine.send_empty_results");
-	}	
-	
-	public String getResourcesPath(){
-		return config.getString("rsp_server.static_resources.path");
 	}	
 }

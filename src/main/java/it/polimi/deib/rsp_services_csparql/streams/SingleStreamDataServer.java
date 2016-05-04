@@ -41,6 +41,7 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.util.*;
 
+import org.apache.http.HttpException;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.glassfish.tyrus.client.ClientManager;
@@ -174,8 +175,8 @@ public class SingleStreamDataServer extends ServerResource {
 
                 inputStreamName = URLDecoder.decode(f.getFirstValue("streamIri"), "UTF-8");
                 sGraph = RDFDataMgr.loadModel(inputStreamName, Lang.JSONLD);
-                sGraph.write(System.out);
-            } catch (Exception e){
+                //sGraph.write(System.out);
+            }catch (Exception e){
                 logger.error(e.getMessage(), e);
             }
 
@@ -208,7 +209,11 @@ public class SingleStreamDataServer extends ServerResource {
                 try {
                     tBox = RDFDataMgr.loadModel(tBoxUrl, Lang.JSONLD);
                 } catch (Exception e) {
-                    tBox = RDFDataMgr.loadModel(tBoxUrl, Lang.RDFXML);
+                    try {
+                        tBox = RDFDataMgr.loadModel(tBoxUrl, Lang.RDFXML);
+                    } catch (Exception e1) {
+                        tBox = null;
+                    }
                 }
             if(aBoxUrl != null && !aBoxUrl.isEmpty())
                 try {
@@ -535,8 +540,8 @@ public class SingleStreamDataServer extends ServerResource {
                             try {
                                 Model model = deserializizeAsJsonSerialization(message, null);
                                 str.feed_RDF_stream(model);
-                                System.out.println(model.size() + " triples streamed so far");
-                                logger.info("{} triples streamed so far", model.size());
+//                                System.out.println(model.size() + " triples streamed so far");
+//                                logger.info("{} triples streamed so far", model.size());
                             } catch (Exception e) {
                                 logger.error(e.getMessage(), e);
                             }

@@ -54,8 +54,8 @@ public class rsp_services_csparql_server extends Application{
 	private static Hashtable<String, Csparql_RDF_Stream> csparqlStreamTable = new Hashtable<String, Csparql_RDF_Stream>();
 	private static Hashtable<String, Csparql_Query> csparqlQueryTable = new Hashtable<String, Csparql_Query>();
 
-	private static Application resources;
-	private static String resourcesPath;
+//	private static Application resources;
+//	private static String resourcesPath;
 
 	private static String propertiesFilePath = new String();
 
@@ -74,7 +74,8 @@ public class rsp_services_csparql_server extends Application{
 		if(args.length > 0){
 			propertiesFilePath = args[0];
 		} else {
-			propertiesFilePath = "http://streamreasoning.org/configuration_files/rspCsparql/setup.properties";
+//			propertiesFilePath = "http://streamreasoning.org/configuration_files/rspCsparql/setup.properties";
+            propertiesFilePath = "/Users/baldo/Documents/Work/git/TripleWave/Running_Examples/RSP_Services_CSPARQL/config/config.properties";
 		}
 
 		Config.initialize(propertiesFilePath);
@@ -85,24 +86,24 @@ public class rsp_services_csparql_server extends Application{
 		engine = new Csparql_Engine();
 		engine.initialize();
 
-		resourcesPath = new File(Config.getInstance().getResourcesPath()).getAbsolutePath(); 
-		logger.debug("Static resources path: {}", resourcesPath);
-
-		if(System.getProperty("os.name").contains("Windows")){
-			resources = new Application() {  
-				@Override  
-				public Restlet createInboundRoot() {  
-					return new Directory(getContext(), "file:///" + resourcesPath + "/");  
-				}  
-			};  
-		} else {
-			resources = new Application() {  
-				@Override  
-				public Restlet createInboundRoot() {  
-					return new Directory(getContext(), "file://" + resourcesPath + "/");  
-				}  
-			};  
-		}
+//		resourcesPath = new File(Config.getInstance().getResourcesPath()).getAbsolutePath();
+//		logger.debug("Static resources path: {}", resourcesPath);
+//
+//		if(System.getProperty("os.name").contains("Windows")){
+//			resources = new Application() {
+//				@Override
+//				public Restlet createInboundRoot() {
+//					return new Directory(getContext(), "file:///" + resourcesPath + "/");
+//				}
+//			};
+//		} else {
+//			resources = new Application() {
+//				@Override
+//				public Restlet createInboundRoot() {
+//					return new Directory(getContext(), "file://" + resourcesPath + "/");
+//				}
+//			};
+//		}
 
 		component = new Component();
 		component.getServers().add(Protocol.HTTP, Config.getInstance().getServerPort());
@@ -111,7 +112,7 @@ public class rsp_services_csparql_server extends Application{
 		rsp_services_csparql_server csparqlServer = new rsp_services_csparql_server();
 		component.getDefaultHost().attach("", csparqlServer);
 
-		component.getDefaultHost().attach(resources); 
+//		component.getDefaultHost().attach(resources);
 
 		component.start();
 
@@ -135,7 +136,7 @@ public class rsp_services_csparql_server extends Application{
 		Router router = new Router(getContext());
 		router.setDefaultMatchingMode(Template.MODE_EQUALS);
 
-		router.attach("/demo", resources.createInboundRoot());
+//		router.attach("/demo", resources.createInboundRoot());
 		router.attach("/streams", SingleStreamDataServer.class);
 //		router.attach("/streams/{streamname}", SingleStreamDataServer.class);
 		router.attach("/queries", MultipleQueriesDataServer.class);
