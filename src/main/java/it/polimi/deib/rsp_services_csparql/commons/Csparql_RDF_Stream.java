@@ -111,7 +111,12 @@ public class Csparql_RDF_Stream implements RDF_Stream_Interface{
         StmtIterator it = model.listStatements();
         while(it.hasNext()){
             Statement st = it.next();
-            stream.put(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
+            RdfQuadruple q;
+            if(st.getObject().isLiteral())
+                q = new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), "\"" + st.getObject().asLiteral().getLexicalForm() + "\"^^" + st.getObject().asLiteral().getLanguage(), ts);
+            else
+                q = new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts);
+            stream.put(q);
         }
     }
 	
