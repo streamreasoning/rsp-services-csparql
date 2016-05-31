@@ -20,39 +20,53 @@
  ******************************************************************************/
 package it.polimi.deib.rsp_services_csparql.queries.utilities;
 
+import com.hp.hpl.jena.rdf.model.Model;
+
 import java.util.Observer;
 
 public class Csparql_Observer_Descriptor {
 	
 	private String id;
+    private String type;
 	private Observer observer;
-	
-	public Csparql_Observer_Descriptor(String id, Observer observer) {
-		super();
-		this.id = id;
-		this.observer = observer;
-	}
-	
-	public Csparql_Observer_Descriptor() {
-		super();
-	}
-	
-	public String getId() {
-		return id;
-	}
-	
-	public void setId(String id) {
-		this.id = id;
-	}
-	
-	public Observer getObserver() {
-		return observer;
-	}
-	
-	public void setObserver(Observer observer) {
-		this.observer = observer;
-	}
-	
-	
+    private Model sGraph;
 
+    public Csparql_Observer_Descriptor(String id, String type, Observer observer, Model sGraph) {
+        this.id = id;
+        this.type = type;
+        this.observer = observer;
+        this.sGraph = sGraph;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Observer getObserver() {
+        return observer;
+    }
+
+    public void setObserver(Observer observer) {
+        this.observer = observer;
+    }
+
+    public Model getsGraph() {
+        return sGraph;
+    }
+
+    public void setsGraph(Model sGraph) {
+        this.sGraph = sGraph;
+    }
 }

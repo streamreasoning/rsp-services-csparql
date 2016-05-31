@@ -23,11 +23,15 @@ package it.polimi.deib.rsp_services_csparql.observers;
 import it.polimi.deib.rsp_services_csparql.commons.Csparql_Query;
 import it.polimi.deib.rsp_services_csparql.configuration.Config;
 
-import java.util.Hashtable;
+import java.io.StringWriter;
+import java.util.*;
 
+import it.polimi.deib.rsp_services_csparql.queries.utilities.Csparql_Observer_Descriptor;
+import org.restlet.data.Form;
+import org.restlet.data.Header;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.engine.header.Header;
+import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Options;
@@ -57,6 +61,53 @@ public class SingleObserverDataServer extends ServerResource {
 		responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
 	}
 
+    @SuppressWarnings({ "unchecked" })
+    @Get
+    public void getObserversInfo(){
+
+        csparqlQueryTable = (Hashtable<String, Csparql_Query>) getContext().getAttributes().get("csaprqlQueryTable");
+
+        String queryName = (String) this.getRequest().getAttributes().get("queryname");
+        String obsId = (String) this.getRequest().getAttributes().get("id");
+
+        String origin = getRequest().getClientInfo().getAddress();
+        Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+        if (responseHeaders == null) {
+            responseHeaders = new Series<Header>(Header.class);
+            getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
+        }
+        responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+
+        try{
+            if(csparqlQueryTable.containsKey(queryName)){
+                Csparql_Query csparqlQuery = csparqlQueryTable.get(queryName);
+                HashMap<String, Csparql_Observer_Descriptor> obsMap = csparqlQuery.getObservers();
+                if(obsMap.containsKey(obsId)) {
+                    Csparql_Observer_Descriptor cso = obsMap.get(obsId);
+                    StringWriter sw = new StringWriter();
+                    cso.getsGraph().write(sw, "JSON-LD");
+                    this.getResponse().setStatus(Status.SUCCESS_OK, "Observers informations succesfully extracted");
+                    this.getResponse().setEntity(sw.toString(), MediaType.APPLICATION_JSON);
+                } else {
+                    this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, obsId + " is not associated to any registered observer");
+                    this.getResponse().setEntity(gson.toJson(obsId + " is not associated to any registered observer"), MediaType.APPLICATION_JSON);
+                }
+            } else {
+                this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, queryName + " is not associated to any registered query");
+                this.getResponse().setEntity(gson.toJson(queryName + " is not associated to any registered query"), MediaType.APPLICATION_JSON);
+            }
+        } catch (Exception e) {
+            logger.error("Error while getting observers information");
+            this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"Error while getting observers information");
+            this.getResponse().setEntity(gson.toJson("Error while getting observers information"), MediaType.APPLICATION_JSON);
+        } finally{
+            this.getResponse().commit();
+            this.commit();
+            this.release();
+        }
+
+    }
+
 	@SuppressWarnings({ "unchecked" })
 	@Delete
 	public void unregisterObserver(){
@@ -66,10 +117,8 @@ public class SingleObserverDataServer extends ServerResource {
 			csparqlQueryTable = (Hashtable<String, Csparql_Query>) getContext().getAttributes().get("csaprqlQueryTable");
 			String hostName = Config.getInstance().getHostName();
 
-			String queryURI = (String) this.getRequest().getAttributes().get("queryname");
-			String queryName = queryURI.replace(hostName + "/queries/", "");
-			String observerURI = (String) this.getRequest().getAttributes().get("id");
-			String observerId = observerURI.replace(queryURI + "/observers/", "");
+			String queryName = (String) this.getRequest().getAttributes().get("queryname");
+			String observerId = (String) this.getRequest().getAttributes().get("id");
 
 			String origin = getRequest().getClientInfo().getAddress();
 			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
@@ -88,17 +137,17 @@ public class SingleObserverDataServer extends ServerResource {
 						this.getResponse().setStatus(Status.SUCCESS_OK,"Observer succesfully unregistered");
 						this.getResponse().setEntity(gson.toJson("Observer succesfully unregistered"), MediaType.APPLICATION_JSON);
 					} else {
-						this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, queryURI + " ID is not associated to any registered query");
-						this.getResponse().setEntity(gson.toJson(queryURI + " ID is not associated to any registered query"), MediaType.APPLICATION_JSON);
+						this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, queryName + " ID is not associated to any registered query");
+						this.getResponse().setEntity(gson.toJson(queryName + " ID is not associated to any registered query"), MediaType.APPLICATION_JSON);
 					}
 				} else {
-					this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, queryURI + " ID is not associated to any registered query");
-					this.getResponse().setEntity(gson.toJson(queryURI + " ID is not associated to any registered query"), MediaType.APPLICATION_JSON);
+					this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, queryName + " ID is not associated to any registered query");
+					this.getResponse().setEntity(gson.toJson(queryName + " ID is not associated to any registered query"), MediaType.APPLICATION_JSON);
 				}
 			} catch (Exception e) {
-				logger.error("Error while unregistering observer " + observerURI);
-				this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"Error while unregistering observer " + observerURI);
-				this.getResponse().setEntity(gson.toJson("Error while unregistering observer " + observerURI), MediaType.APPLICATION_JSON);
+				logger.error("Error while unregistering observer " + observerId);
+				this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"Error while unregistering observer " + observerId);
+				this.getResponse().setEntity(gson.toJson("Error while unregistering observer " + observerId), MediaType.APPLICATION_JSON);
 			} finally{
 				this.getResponse().commit();
 				this.commit();	
@@ -115,50 +164,4 @@ public class SingleObserverDataServer extends ServerResource {
 		}
 	}
 
-	@SuppressWarnings({ "unchecked" })
-	@Get
-	public void getObserverInfo(){
-		String observerURI = new String();
-		try{
-			csparqlQueryTable = (Hashtable<String, Csparql_Query>) getContext().getAttributes().get("csaprqlQueryTable");
-			String hostName = Config.getInstance().getHostName();
-
-			String queryURI = (String) this.getRequest().getAttributes().get("queryname");
-			String queryName = queryURI.replace(hostName + "/queries/", "");
-			observerURI = (String) this.getRequest().getAttributes().get("id");
-			String observerId = observerURI.replace(queryURI + "/observers/", "");
-
-			String origin = getRequest().getClientInfo().getAddress();
-			Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-			if (responseHeaders == null) {
-				responseHeaders = new Series<Header>(Header.class);
-				getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-			}
-			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
-
-			if(csparqlQueryTable.containsKey(queryName)){
-				Csparql_Query csparqlQuery = csparqlQueryTable.get(queryName);
-				if(csparqlQuery.getObservers().containsKey(observerId)){
-					getContext().getAttributes().put("csaprqlQueryTable", csparqlQueryTable);
-					this.getResponse().setStatus(Status.SUCCESS_OK,"Observer informations succesfully extracted");
-					this.getResponse().setEntity(gson.toJson(csparqlQuery.getObservers().get(observerId)), MediaType.APPLICATION_JSON);		
-				} else {
-					this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, observerURI + " ID is not associated to any registered observer");
-					this.getResponse().setEntity(gson.toJson(observerURI + " ID is not associated to any registered observer"), MediaType.APPLICATION_JSON);
-				}
-			} else {
-				this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, queryURI + " ID is not associated to any registered query");
-				this.getResponse().setEntity(gson.toJson(queryURI + " ID is not associated to any registered query"), MediaType.APPLICATION_JSON);
-			}
-		} catch (Exception e) {
-			logger.error("Error while unregistering observer " + observerURI);
-			this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"Error while unregistering observer " + observerURI);
-			this.getResponse().setEntity(gson.toJson("Error while unregistering observer " + observerURI), MediaType.APPLICATION_JSON);
-		} finally{
-			this.getResponse().commit();
-			this.commit();	
-			this.release();
-		}
-
-	}
 }

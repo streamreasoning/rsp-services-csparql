@@ -33,7 +33,9 @@ import javax.websocket.Session;
 
 public class Csparql_RDF_Stream implements RDF_Stream_Interface{
 
-	private RdfStream stream;
+	private String id;
+    private String iri;
+    private RdfStream stream;
 	private Rsp_services_Component_Status status;
     private Model tBox;
     private Model staticAbox;
@@ -44,9 +46,27 @@ public class Csparql_RDF_Stream implements RDF_Stream_Interface{
 		super();
 	}
 
-    public Csparql_RDF_Stream(RdfStream stream, Rsp_services_Component_Status status) {
+    public Csparql_RDF_Stream(String id, String iri, RdfStream stream, Rsp_services_Component_Status status) {
+        this.id = id;
+        this.iri = iri;
         this.stream = stream;
         this.status = status;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getIri() {
+        return iri;
+    }
+
+    public void setIri(String iri) {
+        this.iri = iri;
     }
 
     public RdfStream getStream() {

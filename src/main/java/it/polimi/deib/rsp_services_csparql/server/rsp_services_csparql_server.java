@@ -42,6 +42,7 @@ import org.restlet.Component;
 import org.restlet.Restlet;
 import org.restlet.data.Protocol;
 import org.restlet.resource.Directory;
+import org.restlet.routing.Route;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
 import org.slf4j.Logger;
@@ -138,14 +139,12 @@ public class rsp_services_csparql_server extends Application{
         router.setDefaultMatchingMode(Template.MODE_EQUALS);
 
 //		router.attach("/demo", resources.createInboundRoot());
-        router.attach("/streams", SingleStreamDataServer.class);
-//		router.attach("/streams/{streamname}", SingleStreamDataServer.class);
+        router.attach("/streams", MultipleStreamsDataServer.class);
+		router.attach("/streams/{streamname}", SingleStreamDataServer.class);
         router.attach("/queries", MultipleQueriesDataServer.class);
         router.attach("/queries/{queryname}", SingleQueryDataServer.class);
         router.attach("/queries/{queryname}/observers", MultipleObserversDataServer.class);
         router.attach("/queries/{queryname}/observers/{id}", SingleObserverDataServer.class);
-
-        router.attach("/kb", StaticKnowledgeManager.class);
 
         return router;
     }

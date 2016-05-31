@@ -25,6 +25,7 @@ import com.github.jsonldjava.core.JsonLdOptions;
 import com.github.jsonldjava.core.JsonLdProcessor;
 import com.github.jsonldjava.core.RDFDataset;
 import com.github.jsonldjava.utils.JsonUtils;
+import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.query.*;
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.rdf.model.impl.PropertyImpl;
@@ -46,11 +47,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.glassfish.tyrus.client.ClientManager;
 import org.glassfish.tyrus.client.ClientProperties;
-import org.restlet.data.ClientInfo;
-import org.restlet.data.Form;
-import org.restlet.data.MediaType;
-import org.restlet.data.Status;
-import org.restlet.engine.header.Header;
+import org.restlet.data.*;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
@@ -87,8 +84,8 @@ public class SingleStreamDataServer extends ServerResource {
     private String queryString = "PREFIX sld: <http://streamreasoning.org/ontologies/SLD4TripleWave#> " +
             "SELECT ?wsurl ?tboxurl ?aboxurl " +
             "WHERE {" +
-            "?sGraph sld:streamLocation ?wsurl ; " +
-            "sld:tBoxLocation ?tboxurl . " +
+            "?sGraph sld:streamLocation ?wsurl . " +
+            "OPTIONAL { ?sGraph sld:tBoxLocation ?tboxurl . } " +
             "OPTIONAL { ?sGraph sld::staticaBoxLoxation ?aboxurl . } " +
             "}";
     private Query query = QueryFactory.create(queryString, Syntax.syntaxSPARQL_11);
@@ -110,7 +107,7 @@ public class SingleStreamDataServer extends ServerResource {
 
     @SuppressWarnings({ "unchecked" })
     @Get
-    public void getStreamsInformations(){
+    public void getStreamInformations(){
 
         try{
 
@@ -123,20 +120,16 @@ public class SingleStreamDataServer extends ServerResource {
             responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
 
             csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
-            ArrayList<CsparqlStreamDescriptionForGet> streamDescriptionList = new ArrayList<CsparqlStreamDescriptionForGet>();
-
-            Set<String> keySet = csparqlStreamTable.keySet();
-            Csparql_RDF_Stream registeredCsparqlStream;
-            for(String key : keySet){
-                registeredCsparqlStream = csparqlStreamTable.get(key);
-                streamDescriptionList.add(new CsparqlStreamDescriptionForGet(registeredCsparqlStream.getStream().getIRI(), registeredCsparqlStream.getStatus()));
+            String inputStreamName = (String) this.getRequest().getAttributes().get("streamname");
+            if(csparqlStreamTable.containsKey(inputStreamName)){
+                this.getResponse().setStatus(Status.SUCCESS_OK,"Information about streams succesfully extracted");
+                this.getResponse().setEntity(gson.toJson(csparqlStreamTable.get(inputStreamName)), MediaType.APPLICATION_JSON);
+            } else {
+                this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"A stream with specified name does not exist");
+                this.getResponse().setEntity(gson.toJson("A stream with specified name does not exist"), MediaType.APPLICATION_JSON);
             }
-
-            this.getResponse().setStatus(Status.SUCCESS_OK,"Information about streams succesfully extracted");
-            this.getResponse().setEntity(gson.toJson(streamDescriptionList), MediaType.APPLICATION_JSON);
-
         } catch(Exception e){
-            logger.error("Error while getting multiple streams informations", e);
+            logger.error("Error while getting stream information", e);
             this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"Generic Error");
             this.getResponse().setEntity(gson.toJson("Generic Error"), MediaType.APPLICATION_JSON);
         } finally{
@@ -169,12 +162,15 @@ public class SingleStreamDataServer extends ServerResource {
             engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
 
             String inputStreamName = null;
+            String inputStreamIRI = null;
+
+            inputStreamName = (String) this.getRequest().getAttributes().get("streamname");
 
             try {
                 Form f = new Form(rep);
 
-                inputStreamName = URLDecoder.decode(f.getFirstValue("streamIri"), "UTF-8");
-                sGraph = RDFDataMgr.loadModel(inputStreamName, Lang.JSONLD);
+                inputStreamIRI = f.getFirstValue("streamIri", true);
+                sGraph = RDFDataMgr.loadModel(inputStreamIRI, Lang.JSONLD);
                 //sGraph.write(System.out);
             }catch (Exception e){
                 logger.error(e.getMessage(), e);
@@ -194,10 +190,11 @@ public class SingleStreamDataServer extends ServerResource {
                     wsUrl = qs.getLiteral("wsurl").getLexicalForm();
                 else
                     wsUrl = qs.get("wsurl").toString();
-                if(qs.get("tboxurl").isLiteral())
-                    tBoxUrl = qs.getLiteral("tboxurl").getLexicalForm();
-                else
-                    tBoxUrl = qs.get("tboxurl").toString();
+                if(qs.contains("tboxurl"))
+                    if(qs.get("tboxurl").isLiteral())
+                        tBoxUrl = qs.getLiteral("tboxurl").getLexicalForm();
+                    else
+                        tBoxUrl = qs.get("tboxurl").toString();
                 if(qs.contains("aboxurl"))
                     if(qs.get("aboxurl").isLiteral())
                         aBoxUrl = qs.getLiteral("aboxurl").getLexicalForm();
@@ -224,8 +221,8 @@ public class SingleStreamDataServer extends ServerResource {
             //Aggiungere pezzo con collegamento al ws
 
             if(!csparqlStreamTable.containsKey(inputStreamName)){
-                RdfStream stream = new RdfStream(inputStreamName);
-                Csparql_RDF_Stream csparqlStream = new Csparql_RDF_Stream(stream, Rsp_services_Component_Status.RUNNING);
+                RdfStream stream = new RdfStream(inputStreamIRI);
+                Csparql_RDF_Stream csparqlStream = new Csparql_RDF_Stream(inputStreamName, inputStreamIRI, stream, Rsp_services_Component_Status.RUNNING);
                 if(tBox != null && !tBox.isEmpty())
                     csparqlStream.settBox(tBox);
                 if(aBox != null && !aBox.isEmpty())
@@ -241,8 +238,8 @@ public class SingleStreamDataServer extends ServerResource {
                 engine.registerStream(stream);
                 getContext().getAttributes().put("csaprqlinputStreamTable", csparqlStreamTable);
                 getContext().getAttributes().put("csparqlengine", engine);
-                this.getResponse().setStatus(Status.SUCCESS_OK,"Stream " + inputStreamName + " succesfully registered");
-                this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully registered"), MediaType.APPLICATION_JSON);
+                this.getResponse().setStatus(Status.SUCCESS_OK,"Stream " + inputStreamName + " succesfully registered with IRI " + inputStreamIRI);
+                this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully registered with IRI " + inputStreamIRI), MediaType.APPLICATION_JSON);
             } else {
                 this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,inputStreamName + " already exists");
                 this.getResponse().setEntity(gson.toJson(inputStreamName + " already exists"), MediaType.APPLICATION_JSON);
@@ -259,50 +256,49 @@ public class SingleStreamDataServer extends ServerResource {
 
     }
 
-//    @SuppressWarnings({ "unchecked" })
-//    @Delete
-//    public void unregisterStream(Representation rep){
-//        try{
-//
-//            String origin = getRequest().getClientInfo().getAddress();
-//            Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-//            if (responseHeaders == null) {
-//                responseHeaders = new Series<Header>(Header.class);
-//                getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-//            }
-//            responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
-//
-//            csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
-//            engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
-//
-//            String inputStreamName;
-//
-//            Form f = new Form(rep);
-//            inputStreamName = URLDecoder.decode(f.getFirstValue("streamIri"), "UTF-8");
-//
-//            if(csparqlStreamTable.containsKey(inputStreamName)){
-//                RdfStream stream = csparqlStreamTable.get(inputStreamName).getStream();
-//                engine.unregisterStream(stream.getIRI());
-//                csparqlStreamTable.remove(inputStreamName);
-//                getContext().getAttributes().put("csaprqlinputStreamTable", csparqlStreamTable);
-//                getContext().getAttributes().put("csparqlengine", engine);
-//                this.getResponse().setStatus(Status.SUCCESS_OK,"Stream " + inputStreamName + " succesfully unregistered");
-//                this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully unregistered"), MediaType.APPLICATION_JSON);
-//            } else {
-//                this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,inputStreamName + " does not exist");
-//                this.getResponse().setEntity(gson.toJson(inputStreamName + " does not exist"), MediaType.APPLICATION_JSON);
-//            }
-//
-//        } catch(Exception e){
-//            logger.error("Error while unregistering stream", e);
-//            this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,Utilities.getStackTrace(e));
-//            this.getResponse().setEntity(gson.toJson(Utilities.getStackTrace(e)), MediaType.APPLICATION_JSON);
-//        } finally{
-//            this.getResponse().commit();
-//            this.commit();
-//            this.release();
-//        }
-//    }
+    @SuppressWarnings({ "unchecked" })
+    @Delete
+    public void unregisterStream(){
+        try{
+
+            String origin = getRequest().getClientInfo().getAddress();
+            Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+            if (responseHeaders == null) {
+                responseHeaders = new Series<Header>(Header.class);
+                getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
+            }
+            responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+
+            csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
+            engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
+
+            String inputStreamName;
+
+            inputStreamName = (String) this.getRequest().getAttributes().get("streamname");
+
+            if(csparqlStreamTable.containsKey(inputStreamName)){
+                RdfStream stream = csparqlStreamTable.get(inputStreamName).getStream();
+                engine.unregisterStream(stream.getIRI());
+                csparqlStreamTable.remove(inputStreamName);
+                getContext().getAttributes().put("csaprqlinputStreamTable", csparqlStreamTable);
+                getContext().getAttributes().put("csparqlengine", engine);
+                this.getResponse().setStatus(Status.SUCCESS_OK,"Stream " + inputStreamName + " succesfully unregistered");
+                this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully unregistered"), MediaType.APPLICATION_JSON);
+            } else {
+                this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,inputStreamName + " does not exist");
+                this.getResponse().setEntity(gson.toJson(inputStreamName + " does not exist"), MediaType.APPLICATION_JSON);
+            }
+
+        } catch(Exception e){
+            logger.error("Error while unregistering stream", e);
+            this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,Utilities.getStackTrace(e));
+            this.getResponse().setEntity(gson.toJson(Utilities.getStackTrace(e)), MediaType.APPLICATION_JSON);
+        } finally{
+            this.getResponse().commit();
+            this.commit();
+            this.release();
+        }
+    }
 
     @SuppressWarnings({ "unchecked" })
     @Post
@@ -311,60 +307,41 @@ public class SingleStreamDataServer extends ServerResource {
         try {
 
             Form f = new Form(rep);
-            if (f.getFirstValue("action") != null && f.getFirstValue("action").equalsIgnoreCase("DELETE")) {
+            String origin = getRequest().getClientInfo().getAddress();
+            Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+            if (responseHeaders == null) {
+                responseHeaders = new Series<Header>(Header.class);
+                getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
+            }
+            responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
 
-                String origin = getRequest().getClientInfo().getAddress();
-                Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-                if (responseHeaders == null) {
-                    responseHeaders = new Series<Header>(Header.class);
-                    getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-                }
-                responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+            csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
+            engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
 
-                csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
-                engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
+            String inputStreamName = (String) this.getRequest().getAttributes().get("streamname");
 
-                String inputStreamName = URLDecoder.decode(f.getFirstValue("streamIri"), "UTF-8");
+            if (csparqlStreamTable.containsKey(inputStreamName)) {
+                Csparql_RDF_Stream streamRepresentation = csparqlStreamTable.get(inputStreamName);
 
-                if (csparqlStreamTable.containsKey(inputStreamName)) {
-                    Csparql_RDF_Stream csStream = csparqlStreamTable.get(inputStreamName);
-                    csStream.getWsSession().close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE,inputStreamName + " unregistered from engine!!"));
-                    engine.unregisterStream(csStream.getStream().getIRI());
-                    csparqlStreamTable.remove(inputStreamName);
-                    getContext().getAttributes().put("csaprqlinputStreamTable", csparqlStreamTable);
-                    getContext().getAttributes().put("csparqlengine", engine);
-                    this.getResponse().setStatus(Status.SUCCESS_OK, "Stream " + inputStreamName + " succesfully unregistered");
-                    this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully unregistered"), MediaType.APPLICATION_JSON);
-                } else {
-                    this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, inputStreamName + " does not exist");
-                    this.getResponse().setEntity(gson.toJson(inputStreamName + " does not exist"), MediaType.APPLICATION_JSON);
-                }
+                String jsonSerialization = f.getFirstValue("payload", true);
 
-            } else {
+                Model model = ModelFactory.createDefaultModel();
 
-                String origin = getRequest().getClientInfo().getAddress();
-                Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
-                if (responseHeaders == null) {
-                    responseHeaders = new Series<Header>(Header.class);
-                    getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
-                }
-                responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
+                try {
+                    model.read(new ByteArrayInputStream(jsonSerialization.getBytes("UTF-8")), null, "RDF/JSON");
+                    long ts = System.currentTimeMillis();
 
-                csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
-                engine = (Csparql_Engine) getContext().getAttributes().get("csparqlengine");
+                    StmtIterator it = model.listStatements();
+                    while (it.hasNext()) {
+                        Statement st = it.next();
+                        streamRepresentation.feed_RDF_stream(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
+                    }
 
-
-                String inputStreamName = URLDecoder.decode(f.getFirstValue("streamIri"), "UTF-8");
-
-                if (csparqlStreamTable.containsKey(inputStreamName)) {
-                    Csparql_RDF_Stream streamRepresentation = csparqlStreamTable.get(inputStreamName);
-
-                    String jsonSerialization = f.getFirstValue("payload");
-
-                    Model model = ModelFactory.createDefaultModel();
-
+                    this.getResponse().setStatus(Status.SUCCESS_OK, "Stream " + inputStreamName + " succesfully feeded");
+                    this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully feeded"), MediaType.APPLICATION_JSON);
+                } catch (Exception e) {
                     try {
-                        model.read(new ByteArrayInputStream(jsonSerialization.getBytes("UTF-8")), null, "RDF/JSON");
+                        model.read(new ByteArrayInputStream(jsonSerialization.getBytes("UTF-8")), null, "RDF/XML");
                         long ts = System.currentTimeMillis();
 
                         StmtIterator it = model.listStatements();
@@ -375,9 +352,9 @@ public class SingleStreamDataServer extends ServerResource {
 
                         this.getResponse().setStatus(Status.SUCCESS_OK, "Stream " + inputStreamName + " succesfully feeded");
                         this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully feeded"), MediaType.APPLICATION_JSON);
-                    } catch (Exception e) {
+                    } catch (Exception e1) {
                         try {
-                            model.read(new ByteArrayInputStream(jsonSerialization.getBytes("UTF-8")), null, "RDF/XML");
+                            model.read(new ByteArrayInputStream(jsonSerialization.getBytes("UTF-8")), null, "N-TRIPLE");
                             long ts = System.currentTimeMillis();
 
                             StmtIterator it = model.listStatements();
@@ -388,41 +365,26 @@ public class SingleStreamDataServer extends ServerResource {
 
                             this.getResponse().setStatus(Status.SUCCESS_OK, "Stream " + inputStreamName + " succesfully feeded");
                             this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully feeded"), MediaType.APPLICATION_JSON);
-                        } catch (Exception e1) {
-                            try {
-                                model.read(new ByteArrayInputStream(jsonSerialization.getBytes("UTF-8")), null, "N-TRIPLE");
-                                long ts = System.currentTimeMillis();
+                        } catch (Exception e2) {
+                            model.read(new ByteArrayInputStream(jsonSerialization.getBytes("UTF-8")), null, "TURTLE");
+                            long ts = System.currentTimeMillis();
 
-                                StmtIterator it = model.listStatements();
-                                while (it.hasNext()) {
-                                    Statement st = it.next();
-                                    streamRepresentation.feed_RDF_stream(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
-                                }
-
-                                this.getResponse().setStatus(Status.SUCCESS_OK, "Stream " + inputStreamName + " succesfully feeded");
-                                this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully feeded"), MediaType.APPLICATION_JSON);
-                            } catch (Exception e2) {
-                                model.read(new ByteArrayInputStream(jsonSerialization.getBytes("UTF-8")), null, "TURTLE");
-                                long ts = System.currentTimeMillis();
-
-                                StmtIterator it = model.listStatements();
-                                while (it.hasNext()) {
-                                    Statement st = it.next();
-                                    streamRepresentation.feed_RDF_stream(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
-                                }
-
-                                this.getResponse().setStatus(Status.SUCCESS_OK, "Stream " + inputStreamName + " succesfully feeded");
-                                this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully feeded"), MediaType.APPLICATION_JSON);
+                            StmtIterator it = model.listStatements();
+                            while (it.hasNext()) {
+                                Statement st = it.next();
+                                streamRepresentation.feed_RDF_stream(new RdfQuadruple(st.getSubject().toString(), st.getPredicate().toString(), st.getObject().toString(), ts));
                             }
+
+                            this.getResponse().setStatus(Status.SUCCESS_OK, "Stream " + inputStreamName + " succesfully feeded");
+                            this.getResponse().setEntity(gson.toJson("Stream " + inputStreamName + " succesfully feeded"), MediaType.APPLICATION_JSON);
                         }
                     }
-
-                } else {
-                    this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, "Specified stream does not exists");
-                    this.getResponse().setEntity(gson.toJson("Specified stream does not exists"), MediaType.APPLICATION_JSON);
                 }
-            }
 
+            } else {
+                this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, "Specified stream does not exists");
+                this.getResponse().setEntity(gson.toJson("Specified stream does not exists"), MediaType.APPLICATION_JSON);
+            }
         } catch (Exception e) {
             logger.error("Error while changing status of a stream", e);
             this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, Utilities.getStackTrace(e));
@@ -574,13 +536,13 @@ public class SingleStreamDataServer extends ServerResource {
 
     }
 
-    private static String longToDate(final long date) throws Exception{
+    private String longToDate(final long date) throws Exception{
         final GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTimeInMillis(date);
         return DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar).toXMLFormat();
     }
 
-    public static Model deserializizeAsJsonSerialization(String asJsonSerialization, JsonLdOptions options){
+    public Model deserializizeAsJsonSerialization(String asJsonSerialization, JsonLdOptions options){
 
 //		System.out.println(asJsonSerialization);
 //		logger.info("Input string {}", asJsonSerialization);
@@ -606,7 +568,8 @@ public class SingleStreamDataServer extends ServerResource {
 
             for (String graphName : graphNames){
 
-                List<RDFDataset.Quad> l = rd.getQuads(graphName);
+                List<RDFDataset.Quad> l = new ArrayList<>();
+                l.addAll(rd.getQuads(graphName));
 
                 ResourceImpl subject;
                 PropertyImpl predicate;

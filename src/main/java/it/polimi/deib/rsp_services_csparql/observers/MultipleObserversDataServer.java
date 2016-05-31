@@ -21,17 +21,19 @@
 package it.polimi.deib.rsp_services_csparql.observers;
 
 import it.polimi.deib.rsp_services_csparql.commons.Csparql_Query;
+import it.polimi.deib.rsp_services_csparql.observers.utilities.ObserverDescriptorForGet;
 import it.polimi.deib.rsp_services_csparql.queries.SingleQueryDataServer;
 import it.polimi.deib.rsp_services_csparql.queries.utilities.Csparql_Observer_Descriptor;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.restlet.data.Header;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.engine.header.Header;
 import org.restlet.resource.Get;
 import org.restlet.resource.Options;
 import org.restlet.resource.ServerResource;
@@ -48,7 +50,8 @@ public class MultipleObserversDataServer  extends ServerResource {
 
 	private Logger logger = LoggerFactory.getLogger(SingleQueryDataServer.class.getName());
 
-	@SuppressWarnings("unchecked")
+
+    @SuppressWarnings("unchecked")
 	@Options
 	public void optionsRequestHandler(){
 		String origin = getRequest().getClientInfo().getAddress();
@@ -60,12 +63,11 @@ public class MultipleObserversDataServer  extends ServerResource {
 		responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
 	}
 
-	@SuppressWarnings({ "unchecked" })
 	@Get
 	public void getObserversInfo(){
 
 		csparqlQueryTable = (Hashtable<String, Csparql_Query>) getContext().getAttributes().get("csaprqlQueryTable");
-		ArrayList<Csparql_Observer_Descriptor> observers = new ArrayList<Csparql_Observer_Descriptor>();
+		ArrayList<ObserverDescriptorForGet> observers = new ArrayList<ObserverDescriptorForGet>();
 
 		String queryName = (String) this.getRequest().getAttributes().get("queryname");
 
@@ -78,17 +80,19 @@ public class MultipleObserversDataServer  extends ServerResource {
 		responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
 		
 		try{
-			if(queryName.contains(queryName)){
+			if(csparqlQueryTable.containsKey(queryName)){
 				Csparql_Query csparqlQuery = csparqlQueryTable.get(queryName);
 				Set<Entry<String, Csparql_Observer_Descriptor>> obsSet = csparqlQuery.getObservers().entrySet();
 				for(Entry<String, Csparql_Observer_Descriptor> eObserver : obsSet){
-					observers.add(eObserver.getValue());
+					observers.add(new ObserverDescriptorForGet(eObserver.getValue().getId(),
+                            eObserver.getValue().getType(),
+                            "/queries/" + csparqlQuery.getName() + "/observers/" + eObserver.getValue().getId()));
 				}
 				this.getResponse().setStatus(Status.SUCCESS_OK,"Observers informations succesfully extracted");
 				this.getResponse().setEntity(gson.toJson(observers), MediaType.APPLICATION_JSON);
 			} else {
-				this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, queryName + " ID is not associated to any registered query");
-				this.getResponse().setEntity(gson.toJson(queryName + " ID is not associated to any registered query"), MediaType.APPLICATION_JSON);
+				this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL, queryName + " is not associated to any registered query");
+				this.getResponse().setEntity(gson.toJson(queryName + " is not associated to any registered query"), MediaType.APPLICATION_JSON);
 			}
 		} catch (Exception e) {
 			logger.error("Error while getting observers information");

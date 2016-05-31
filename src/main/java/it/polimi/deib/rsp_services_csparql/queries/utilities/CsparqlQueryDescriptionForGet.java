@@ -32,7 +32,7 @@ public class CsparqlQueryDescriptionForGet {
 	private Collection<String> streams;
 	private String body;
 	private Rsp_services_Component_Status status;
-	
+
 	public CsparqlQueryDescriptionForGet() {
 		super();
 	}

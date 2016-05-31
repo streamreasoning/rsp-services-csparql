@@ -20,6 +20,7 @@
  ******************************************************************************/
 package it.polimi.deib.rsp_services_csparql.streams;
 
+import com.google.gson.GsonBuilder;
 import it.polimi.deib.rsp_services_csparql.commons.Csparql_RDF_Stream;
 import it.polimi.deib.rsp_services_csparql.streams.utilities.CsparqlStreamDescriptionForGet;
 
@@ -27,9 +28,9 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Set;
 
+import org.restlet.data.Header;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.engine.header.Header;
 import org.restlet.resource.Get;
 import org.restlet.resource.Options;
 import org.restlet.resource.ServerResource;
@@ -42,7 +43,7 @@ import com.google.gson.Gson;
 public class MultipleStreamsDataServer extends ServerResource {
 
 	private static Hashtable<String, Csparql_RDF_Stream> csparqlStreamTable;
-	private Gson gson = new Gson();
+	private Gson gson = new GsonBuilder().serializeNulls().create();
 	private Logger logger = LoggerFactory.getLogger(MultipleStreamsDataServer.class.getName());
 	
 	@SuppressWarnings("unchecked")
@@ -72,19 +73,26 @@ public class MultipleStreamsDataServer extends ServerResource {
 			responseHeaders.add(new Header("Access-Control-Allow-Origin", origin));
 		    
 			csparqlStreamTable = (Hashtable<String, Csparql_RDF_Stream>) getContext().getAttributes().get("csaprqlinputStreamTable");
-			ArrayList<CsparqlStreamDescriptionForGet> streamDescriptionList = new ArrayList<CsparqlStreamDescriptionForGet>();
+			ArrayList<CsparqlStreamDescriptionForGet> streamDescriptionList =
+                    new ArrayList<CsparqlStreamDescriptionForGet>();
 
 			Set<String> keySet = csparqlStreamTable.keySet();
-			Csparql_RDF_Stream registeredCsparqlStream;
+			Csparql_RDF_Stream css;
 			for(String key : keySet){
-				registeredCsparqlStream = csparqlStreamTable.get(key); 
-				streamDescriptionList.add(new CsparqlStreamDescriptionForGet(registeredCsparqlStream.getStream().getIRI(), registeredCsparqlStream.getStatus()));
+                css = csparqlStreamTable.get(key);
+				streamDescriptionList.add(new CsparqlStreamDescriptionForGet(css.getId(), css.getIri(), css.getStatus()));
 			}
 
+            try{
+            String jsonFormat = gson.toJson(streamDescriptionList);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
 			this.getResponse().setStatus(Status.SUCCESS_OK,"Information about streams succesfully extracted");
 			this.getResponse().setEntity(gson.toJson(streamDescriptionList), MediaType.APPLICATION_JSON);
 
 		} catch(Exception e){
+            e.printStackTrace();
 			logger.error("Error while getting multiple streams informations", e);
 			this.getResponse().setStatus(Status.SERVER_ERROR_INTERNAL,"Generic Error");
 			this.getResponse().setEntity(gson.toJson("Generic Error"), MediaType.APPLICATION_JSON);

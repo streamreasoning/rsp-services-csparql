@@ -24,28 +24,37 @@ import org.streamreasoning.rsp_services.commons.Rsp_services_Component_Status;
 
 public class CsparqlStreamDescriptionForGet {
 
+    private String name;
 	private String streamIRI;
 	private Rsp_services_Component_Status status;
-	
-	public CsparqlStreamDescriptionForGet() {
-		super();
-	}
-	public CsparqlStreamDescriptionForGet(String streamIRI, Rsp_services_Component_Status status) {
-		super();
-		this.streamIRI = streamIRI;
-		this.status = status;
-	}
-	
-	public String getStream() {
-		return streamIRI;
-	}
-	public void setStream(String streamIRI) {
-		this.streamIRI = streamIRI;
-	}
-	public Rsp_services_Component_Status getStatus() {
-		return status;
-	}
-	public void setStatus(Rsp_services_Component_Status status) {
-		this.status = status;
-	}
+
+    public CsparqlStreamDescriptionForGet(String name, String streamIRI, Rsp_services_Component_Status status) {
+        this.name = name;
+        this.streamIRI = streamIRI;
+        this.status = status;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getStreamIRI() {
+        return streamIRI;
+    }
+
+    public void setStreamIRI(String streamIRI) {
+        this.streamIRI = streamIRI;
+    }
+
+    public Rsp_services_Component_Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Rsp_services_Component_Status status) {
+        this.status = status;
+    }
 }

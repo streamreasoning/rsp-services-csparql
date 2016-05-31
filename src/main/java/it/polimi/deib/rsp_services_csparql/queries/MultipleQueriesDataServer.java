@@ -21,15 +21,18 @@
 package it.polimi.deib.rsp_services_csparql.queries;
 
 import it.polimi.deib.rsp_services_csparql.commons.Csparql_Query;
+import it.polimi.deib.rsp_services_csparql.observers.utilities.ObserverDescriptorForGet;
 import it.polimi.deib.rsp_services_csparql.queries.utilities.CsparqlQueryDescriptionForGet;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Set;
 
+import it.polimi.deib.rsp_services_csparql.queries.utilities.Csparql_Observer_Descriptor;
+import org.restlet.data.Header;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.engine.header.Header;
 import org.restlet.resource.Get;
 import org.restlet.resource.Options;
 import org.restlet.resource.ServerResource;
@@ -75,10 +78,14 @@ public class MultipleQueriesDataServer extends ServerResource {
 			ArrayList<CsparqlQueryDescriptionForGet> queryDescriptionList = new ArrayList<CsparqlQueryDescriptionForGet>();
 
 			Set<String> keySet = csparqlQueryTable.keySet();
-			Csparql_Query registeredCsparqlQuery;
+            Csparql_Query csq;
+            HashMap<String, Csparql_Observer_Descriptor> om;
+            ArrayList<ObserverDescriptorForGet> ol;
 			for(String key : keySet){
-				registeredCsparqlQuery = csparqlQueryTable.get(key); 
-				queryDescriptionList.add(new CsparqlQueryDescriptionForGet(registeredCsparqlQuery.getName(), registeredCsparqlQuery.getType(), registeredCsparqlQuery.getStreams(), registeredCsparqlQuery.getQueryBody(), registeredCsparqlQuery.getQueryStatus()));
+                csq = csparqlQueryTable.get(key);
+                om = csq.getObservers();
+				queryDescriptionList.add(
+                        new CsparqlQueryDescriptionForGet(csq.getQueryID(), csq.getType(), csq.getStreams(), csq.getQueryBody(), csq.getQueryStatus()));
 			}
 
 			this.getResponse().setStatus(Status.SUCCESS_OK,"Information about queries succesfully extracted");
